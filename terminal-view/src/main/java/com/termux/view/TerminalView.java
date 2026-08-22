@@ -699,11 +699,15 @@ public final class TerminalView extends View {
                         return onKeyUp(keyCode, event);
                 }
             }
-        } else if (mClient.shouldUseCtrlSpaceWorkaround() &&
-                   keyCode == KeyEvent.KEYCODE_SPACE && event.isCtrlPressed()) {
-            /* ctrl+space does not work on some ROMs without this workaround.
-               However, this breaks it on devices where it works out of the box. */
-            return onKeyDown(keyCode, event);
+        } else if (keyCode == KeyEvent.KEYCODE_SPACE && event.isCtrlPressed()) {
+            // VibeTerm: Ctrl+Space is the platform-wide IME-switch convention on hardware
+            // keyboards. Intercept it in onKeyPreIme - BEFORE the IME can swallow it and
+            // before the terminal would consume it as NUL (still available via Ctrl+2) -
+            // and let the client show the input method picker.
+            if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0
+                && mClient.onKeyDown(keyCode, event, mTermSession)) {
+                return true;
+            }
         }
         return super.onKeyPreIme(keyCode, event);
     }

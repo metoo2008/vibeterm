@@ -283,7 +283,17 @@ class VtViewClient : TerminalViewClient {
 
     override fun copyModeChanged(copyMode: Boolean) {}
 
-    override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession): Boolean = false
+    override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession): Boolean {
+        // Ctrl+空格 = 硬件键盘切输入法的系统惯例(TerminalView 在 onKeyPreIme 抢在输入法之前转发过来)。
+        // 终端语义下它本是 NUL,极少用,需要时按 Ctrl+2。
+        if (keyCode == KeyEvent.KEYCODE_SPACE && e.isCtrlPressed) {
+            val v = view ?: return false
+            val imm = v.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showInputMethodPicker()
+            return true
+        }
+        return false
+    }
     override fun onKeyUp(keyCode: Int, e: KeyEvent): Boolean = false
     override fun onLongPress(event: MotionEvent): Boolean = false
 

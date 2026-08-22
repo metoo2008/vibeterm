@@ -19,6 +19,7 @@ import dev.vibeterm.ssh.SessionManager
 import dev.vibeterm.ui.HostListScreen
 import dev.vibeterm.ui.TerminalScreen
 import dev.vibeterm.ui.theme.VibeTermTheme
+import dev.vibeterm.ui.theme.applyTerminalPalette
 
 class MainActivity : ComponentActivity() {
 
@@ -26,6 +27,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         SessionManager.init(this)
         Notifications.ensureChannels(this)
+        applyTerminalPalette()
         if (Build.VERSION.SDK_INT >= 33 &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {

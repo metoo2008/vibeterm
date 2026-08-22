@@ -2,6 +2,7 @@ package dev.vibeterm.ui
 
 import android.content.ClipboardManager
 import android.content.Context
+import android.graphics.Typeface
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -11,6 +12,9 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -77,6 +81,10 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
     val prefs = remember { context.getSharedPreferences("ui", Context.MODE_PRIVATE) }
     var fontSp by remember { mutableIntStateOf(prefs.getInt("fontSp", 14)) }
     LaunchedEffect(fontSp) { prefs.edit().putInt("fontSp", fontSp).apply() }
+
+    val termTypeface = remember {
+        Typeface.createFromAsset(context.assets, "fonts/JetBrainsMonoNL-Regular.ttf")
+    }
 
     val leftClient = remember { VtViewClient() }
     val rightClient = remember { VtViewClient() }
@@ -166,51 +174,21 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
             IconButton(onClick = onShowHosts) {
                 Icon(Icons.Filled.Menu, contentDescription = "主机列表")
             }
-            ScrollableTabRow(
-                selectedTabIndex = sessions.indexOf(focusedSession()).coerceAtLeast(0),
-                modifier = Modifier.weight(1f),
-                edgePadding = 0.dp,
-                containerColor = MaterialTheme.colorScheme.surface,
-                divider = {},
-                indicator = {},
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f).horizontalScroll(rememberScrollState()),
             ) {
                 sessions.forEach { session ->
-                    val isFocused = session == focusedSession()
-                    val onScreen = session == leftSession || (split && session == rightSession)
-                    Tab(
-                        selected = isFocused,
+                    SessionChip(
+                        session = session,
+                        focused = session == focusedSession(),
+                        onScreen = session == leftSession || (split && session == rightSession),
                         onClick = {
                             if (split && focusedPane == 1) rightSession = session else leftSession = session
                             SessionManager.selected = session
                         },
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
-                        ) {
-                            StatusDot(session.state)
-                            Spacer(Modifier.width(6.dp))
-                            Text(
-                                tabTitle(session),
-                                maxLines = 1,
-                                fontSize = 13.sp,
-                                color = when {
-                                    isFocused -> MaterialTheme.colorScheme.onSurface
-                                    onScreen -> MaterialTheme.colorScheme.onSurfaceVariant
-                                    else -> TermGray
-                                },
-                            )
-                            if (isFocused) {
-                                Spacer(Modifier.width(6.dp))
-                                Icon(
-                                    Icons.Filled.Close,
-                                    contentDescription = "关闭窗口",
-                                    modifier = Modifier.size(14.dp).clickable { SessionManager.close(session) },
-                                    tint = TermGray,
-                                )
-                            }
-                        }
-                    }
+                        onClose = { SessionManager.close(session) },
+                    )
                 }
             }
             if (isWide) {
@@ -247,6 +225,7 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
                 session = left,
                 viewClient = leftClient,
                 fontSp = fontSp,
+                typeface = termTypeface,
                 focused = !split || focusedPane == 0,
                 showBorder = split,
                 modifier = Modifier.weight(1f),
@@ -257,6 +236,7 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
                     session = right,
                     viewClient = rightClient,
                     fontSp = fontSp,
+                    typeface = termTypeface,
                     focused = focusedPane == 1,
                     showBorder = true,
                     modifier = Modifier.weight(1f),
@@ -279,6 +259,7 @@ private fun TerminalPane(
     session: SshTerminalSession,
     viewClient: VtViewClient,
     fontSp: Int,
+    typeface: Typeface,
     focused: Boolean,
     showBorder: Boolean,
     modifier: Modifier = Modifier,
@@ -300,6 +281,7 @@ private fun TerminalPane(
                     isFocusableInTouchMode = true
                     setTerminalViewClient(viewClient)
                     setTextSize(with(density) { fontSp.sp.toPx() }.toInt())
+                    setTypeface(typeface)
                     viewClient.view = this
                 }
             },
@@ -352,6 +334,49 @@ private fun TerminalPane(
 private fun tabTitle(session: SshTerminalSession): String {
     val base = session.profile.label.ifBlank { session.profile.host }
     return "$base·${session.windowIndex}"
+}
+
+/** 胶囊式会话标签:焦点态高亮底色,在屏(分屏另一栏)次亮,其余置灰。 */
+@Composable
+private fun SessionChip(
+    session: SshTerminalSession,
+    focused: Boolean,
+    onScreen: Boolean,
+    onClick: () -> Unit,
+    onClose: () -> Unit,
+) {
+    val bg = if (focused) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(horizontal = 3.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(50))
+            .background(bg)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+    ) {
+        StatusDot(session.state)
+        Spacer(Modifier.width(6.dp))
+        Text(
+            tabTitle(session),
+            maxLines = 1,
+            fontSize = 13.sp,
+            color = when {
+                focused -> MaterialTheme.colorScheme.onSurface
+                onScreen -> MaterialTheme.colorScheme.onSurfaceVariant
+                else -> TermGray
+            },
+        )
+        if (focused) {
+            Spacer(Modifier.width(6.dp))
+            Icon(
+                Icons.Filled.Close,
+                contentDescription = "关闭窗口",
+                modifier = Modifier.size(14.dp).clickable(onClick = onClose),
+                tint = TermGray,
+            )
+        }
+    }
 }
 
 private fun sendKeyCode(session: SshTerminalSession, keyCode: Int) {

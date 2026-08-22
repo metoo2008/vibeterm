@@ -11,6 +11,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import dev.vibeterm.MainActivity
 import dev.vibeterm.R
+import dev.vibeterm.data.Prefs
 import dev.vibeterm.ssh.SessionManager
 import dev.vibeterm.ssh.SshTerminalSession
 
@@ -31,11 +32,13 @@ object Notifications {
 
     /** 终端响铃(Claude Code 等工具的精确完成信号)。 */
     fun onBell(session: SshTerminalSession) {
+        if (!Prefs.notifyBell(SessionManager.appContext)) return
         notifyActivity(session, "终端响铃", "${session.displayName} 需要你的注意")
     }
 
     /** 忙碌后静默启发式命中。 */
     fun onPossiblyFinished(session: SshTerminalSession) {
+        if (!Prefs.notifySilence(SessionManager.appContext)) return
         notifyActivity(session, "任务可能已完成", "${session.displayName} 已停止输出")
     }
 

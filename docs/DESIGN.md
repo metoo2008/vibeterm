@@ -227,6 +227,15 @@ ssh-terminal/
 
 每个里程碑的验收标准:真机(或至少模拟器)可演示对应能力,且此前所有里程碑不回归。
 
+### v0.2 vibe coding 增强(2026-08-22,模拟器全量验证)
+
+- [x] **锁屏批准**:静默检测命中后读取屏幕末尾文本,识别确认提示(y/n、Do you want、选项列表等)时通知标题改「可能在等你确认」;所有活动通知带「✅确认(回车)」「✋打断(Esc)」按钮,经 NotificationActionReceiver 直接写入会话,不解锁不切 App(实测 read 提示被通知按钮的回车成功返回)
+- [x] **启动自动恢复会话**:窗口列表持久化(last_windows.json),冷启动自动重连全部窗口回各自 tmux 会话(实测强杀重启零点击回现场)
+- [x] **会话结束不踢人**:用户显式关闭(✕)才移除窗口;会话自行结束保留画面 + 「已结束·关闭窗口」状态条,可看清最后输出
+- [x] **快捷命令面板**:键条 ⌘ 打开,一键发送自定义命令(默认 claude/claude -c//compact/git status 等),可增删,持久化
+- [x] **网络秒重连**:registerDefaultNetworkCallback 监听默认网络切换,变化即丢弃旧传输立即重连(实测关 WiFi 切 3G 无感续接);tmux attach 加 **-D** 踢掉幽灵客户端,防止残留连接把窗口尺寸拖小
+- [x] 顺手修:openSibling 密码从加密存储兜底(不再依赖内存缓存)
+
 ## 10. 许可证
 
 本项目因 vendor Termux 内核而整体采用 **GPLv3**。`terminal-emulator/`、`terminal-view/` 保留 Termux 版权头;vendor 基线:termux-app master(2026-08-22 快照)。sshlib 为 Apache 2.0,兼容。

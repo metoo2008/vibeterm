@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.Icon
 import android.os.Build
 import dev.vibeterm.MainActivity
 import dev.vibeterm.R
@@ -36,11 +37,37 @@ object Notifications {
         notifyActivity(session, "终端响铃", "${session.displayName} 需要你的注意")
     }
 
-    /** 忙碌后静默启发式命中。 */
+    /** 忙碌后静默启发式命中;若屏幕停在确认提示上,标题给出更明确的提醒。 */
     fun onPossiblyFinished(session: SshTerminalSession) {
         if (!Prefs.notifySilence(SessionManager.appContext)) return
-        notifyActivity(session, "任务可能已完成", "${session.displayName} 已停止输出")
+        if (looksLikeWaitingForConfirmation(session)) {
+            notifyActivity(session, "可能在等你确认", "${session.displayName} 停在确认提示,可直接在通知上回复")
+        } else {
+            notifyActivity(session, "任务可能已完成", "${session.displayName} 已停止输出")
+        }
     }
+
+    /** 读取可见屏幕末尾文本,判断是否停在 y/n、选项列表等待确认的界面。仅在主线程调用。 */
+    private fun looksLikeWaitingForConfirmation(session: SshTerminalSession): Boolean {
+        return try {
+            val emulator = session.emulator ?: return false
+            val text = emulator.screen
+                .getSelectedText(0, 0, emulator.mColumns, emulator.mRows)
+                ?.trimEnd() ?: return false
+            val tail = text.takeLast(500)
+            CONFIRM_PATTERNS.any { tail.contains(it) }
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private val CONFIRM_PATTERNS = listOf(
+        "y/n", "Y/n", "(y/N", "[y/N", "[Y/n",
+        "Do you want", "Would you like",
+        "1. Yes", "❯ 1", "2. No",
+        "continue?", "Continue?", "proceed?", "Proceed?",
+        "是否继续", "确认",
+    )
 
     private fun notifyActivity(session: SshTerminalSession, title: String, text: String) {
         // 会话正显示在屏幕上(含分屏的任一面板)时不打扰
@@ -51,22 +78,57 @@ object Notifications {
             context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) return
 
-        val intent = Intent(context, MainActivity::class.java)
+        val notificationId = session.mHandle.hashCode()
+
+        val contentIntent = Intent(context, MainActivity::class.java)
             .setAction(Intent.ACTION_VIEW)
             .putExtra(EXTRA_SESSION_HANDLE, session.mHandle)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        val pending = PendingIntent.getActivity(
-            context, session.mHandle.hashCode(), intent,
+        val contentPending = PendingIntent.getActivity(
+            context, notificationId, contentIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+
+        val icon = Icon.createWithResource(context, R.drawable.ic_notification)
         val notification = Notification.Builder(context, CHANNEL_ACTIVITY)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(text)
-            .setContentIntent(pending)
+            .setContentIntent(contentPending)
             .setAutoCancel(true)
+            // 锁屏遥控:不解锁不切 App,直接把按键写进会话
+            .addAction(
+                Notification.Action.Builder(
+                    icon, "✅ 确认(回车)",
+                    sendInputPending(context, session, "\r", notificationId, requestCodeOffset = 1),
+                ).build()
+            )
+            .addAction(
+                Notification.Action.Builder(
+                    icon, "✋ 打断(Esc)",
+                    sendInputPending(context, session, "\u001b", notificationId, requestCodeOffset = 2),
+                ).build()
+            )
             .build()
-        context.getSystemService(NotificationManager::class.java)
-            .notify(session.mHandle.hashCode(), notification)
+
+        context.getSystemService(NotificationManager::class.java).notify(notificationId, notification)
+    }
+
+    private fun sendInputPending(
+        context: Context,
+        session: SshTerminalSession,
+        payload: String,
+        notificationId: Int,
+        requestCodeOffset: Int,
+    ): PendingIntent {
+        val intent = Intent(context, NotificationActionReceiver::class.java)
+            .setAction(NotificationActionReceiver.ACTION_SEND)
+            .putExtra(EXTRA_SESSION_HANDLE, session.mHandle)
+            .putExtra(NotificationActionReceiver.EXTRA_PAYLOAD, payload)
+            .putExtra(NotificationActionReceiver.EXTRA_NOTIFICATION_ID, notificationId)
+        return PendingIntent.getBroadcast(
+            context, notificationId + requestCodeOffset, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
     }
 }

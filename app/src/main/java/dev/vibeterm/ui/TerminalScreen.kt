@@ -15,6 +15,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,10 +32,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -43,6 +47,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -60,6 +66,7 @@ import com.termux.terminal.KeyHandler
 import com.termux.terminal.TerminalSession
 import com.termux.view.TerminalView
 import com.termux.view.TerminalViewClient
+import dev.vibeterm.data.Prefs
 import dev.vibeterm.ssh.SessionManager
 import dev.vibeterm.ssh.SshTerminalSession
 import dev.vibeterm.ui.theme.TermGray
@@ -85,6 +92,8 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
     val termTypeface = remember {
         Typeface.createFromAsset(context.assets, "fonts/JetBrainsMonoNL-Regular.ttf")
     }
+
+    var showCommands by remember { mutableStateOf(false) }
 
     val leftClient = remember { VtViewClient() }
     val rightClient = remember { VtViewClient() }
@@ -154,6 +163,7 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
             BarKey.RIGHT -> sendKeyCode(session, KeyEvent.KEYCODE_DPAD_RIGHT)
             BarKey.PGUP -> sendKeyCode(session, KeyEvent.KEYCODE_PAGE_UP)
             BarKey.PGDN -> sendKeyCode(session, KeyEvent.KEYCODE_PAGE_DOWN)
+            BarKey.CMDS -> showCommands = true
             BarKey.PASTE -> {
                 val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val text = cm.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()
@@ -251,6 +261,83 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
             onKeyLongPress = { key -> if (key == BarKey.KEYBOARD) imeSwitch() },
         )
     }
+
+    if (showCommands) {
+        QuickCommandsDialog(
+            onDismiss = { showCommands = false },
+            onSend = { command ->
+                focusedSession()?.write(command + "\r")
+                showCommands = false
+            },
+        )
+    }
+}
+
+/** 快捷命令面板:一键发送常用命令(手机上敲 claude -c 这类最费劲),可增删自定义。 */
+@Composable
+private fun QuickCommandsDialog(
+    onDismiss: () -> Unit,
+    onSend: (String) -> Unit,
+) {
+    val context = LocalContext.current
+    val commands = remember { mutableStateListOf<String>().apply { addAll(Prefs.quickCommands(context)) } }
+    var newCommand by remember { mutableStateOf("") }
+
+    fun persist() = Prefs.setQuickCommands(context, commands.toList())
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("快捷命令") },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                commands.forEach { command ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { onSend(command) }
+                            .padding(horizontal = 8.dp, vertical = 10.dp),
+                    ) {
+                        Text(
+                            command,
+                            modifier = Modifier.weight(1f),
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 14.sp,
+                        )
+                        Icon(
+                            Icons.Filled.Close,
+                            contentDescription = "删除",
+                            modifier = Modifier.size(16.dp).clickable {
+                                commands.remove(command)
+                                persist()
+                            },
+                            tint = TermGray,
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(
+                        newCommand,
+                        { newCommand = it },
+                        modifier = Modifier.weight(1f),
+                        label = { Text("新命令") },
+                        singleLine = true,
+                    )
+                    TextButton(
+                        enabled = newCommand.isNotBlank(),
+                        onClick = {
+                            commands.add(newCommand.trim())
+                            persist()
+                            newCommand = ""
+                        },
+                    ) { Text("添加") }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
+    )
 }
 
 /** 单个终端面板:AndroidView(TerminalView) + 连接状态覆盖层。 */
@@ -318,6 +405,21 @@ private fun TerminalPane(
                 ) {
                     Text("连接已断开", color = TermRed, fontSize = 13.sp)
                     TextButton(onClick = { session.reconnect() }) { Text("立即重连") }
+                }
+            }
+            SshTerminalSession.State.CLOSED -> {
+                // 会话已结束:保留画面让用户看清最后输出,手动关才移除
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(12.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                ) {
+                    Text("会话已结束", color = TermGray, fontSize = 13.sp)
+                    TextButton(onClick = { SessionManager.close(session) }) { Text("关闭窗口") }
                 }
             }
             else -> {}

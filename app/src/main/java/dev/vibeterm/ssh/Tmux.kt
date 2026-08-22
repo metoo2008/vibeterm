@@ -7,12 +7,13 @@ object Tmux {
     fun sessionName(index: Int) = "vt$index"
 
     /**
-     * -u 强制 UTF-8;new-session -A:存在则 attach,否则创建 —— 幂等,断线重连回到原会话。
+     * -u 强制 UTF-8;new-session -A:存在则 attach,否则创建 —— 幂等,断线重连回到原会话;
+     * -D:attach 时踢掉其他客户端 —— 换网重连后服务端可能残留幽灵客户端,不踢会把窗口尺寸拖小。
      * 服务器没装 tmux 时回落普通 login shell,并提示会话不具备断线保活能力。
      */
     fun attachCommand(session: String): String =
         "if command -v tmux >/dev/null 2>&1; then " +
-            "exec tmux -u new-session -A -s $session; " +
+            "exec tmux -u new-session -A -D -s $session; " +
             "else " +
             "echo '[VibeTerm] tmux not found on server; falling back to a plain shell.'; " +
             "echo '[VibeTerm] Long-running programs will NOT survive disconnects. Install tmux to fix.'; " +

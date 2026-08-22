@@ -16,4 +16,15 @@ object Prefs {
     fun setNotifySilence(context: Context, value: Boolean) {
         prefs(context).edit().putBoolean("notify_silence", value).apply()
     }
+
+    private const val DEFAULT_QUICK_COMMANDS =
+        "claude\nclaude -c\n/compact\ngit status\ngit diff\nnpm test"
+
+    fun quickCommands(context: Context): List<String> =
+        prefs(context).getString("quick_cmds", DEFAULT_QUICK_COMMANDS)!!
+            .split("\n").filter { it.isNotBlank() }
+
+    fun setQuickCommands(context: Context, commands: List<String>) {
+        prefs(context).edit().putString("quick_cmds", commands.joinToString("\n")).apply()
+    }
 }

@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
         SessionManager.init(this)
         Notifications.ensureChannels(this)
         applyTerminalPalette()
+        SessionManager.restoreWindows() // 冷启动自动恢复上次打开的窗口
         if (Build.VERSION.SDK_INT >= 33 &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {

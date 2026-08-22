@@ -35,6 +35,7 @@ enum class BarKey(val label: String) {
     DASH("-"),
     SLASH("/"),
     PIPE("|"),
+    CMDS("⌘"),
     PASTE("粘贴"),
     KEYBOARD("⌨"),
 }

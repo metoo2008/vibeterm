@@ -115,6 +115,30 @@ class SshTerminalSession(
         if (!userClosed && state == State.DISCONNECTED) connect()
     }
 
+    /**
+     * 系统默认网络发生了切换(WiFi↔流量):旧 TCP 几乎必死但检测可能要很久,
+     * 直接丢弃旧传输立即重连,tmux -A 无缝回到原会话。
+     */
+    fun onNetworkChanged() {
+        if (userClosed) return
+        when (state) {
+            State.CONNECTED, State.CONNECTING -> {
+                val oldChannel = channel
+                val oldConnection = connection
+                channel = null
+                connection = null
+                thread(name = "ssh-netswitch-close", isDaemon = true) {
+                    try { oldChannel?.close() } catch (_: Exception) {}
+                    try { oldConnection?.close() } catch (_: Exception) {}
+                }
+                postStatus("\r\n[VibeTerm] 网络已切换,正在重连…")
+                connect()
+            }
+            State.DISCONNECTED -> connect()
+            State.CLOSED -> {}
+        }
+    }
+
     private fun connect() {
         if (userClosed) return
         val gen = ++generation

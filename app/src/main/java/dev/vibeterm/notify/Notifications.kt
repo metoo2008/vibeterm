@@ -40,8 +40,8 @@ object Notifications {
     }
 
     private fun notifyActivity(session: SshTerminalSession, title: String, text: String) {
-        // 会话正被盯着看时不打扰
-        if (SessionManager.appVisible && SessionManager.selected == session) return
+        // 会话正显示在屏幕上(含分屏的任一面板)时不打扰
+        if (SessionManager.appVisible && session.attachedView != null) return
 
         val context = SessionManager.appContext
         if (Build.VERSION.SDK_INT >= 33 &&

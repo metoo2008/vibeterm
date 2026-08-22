@@ -215,10 +215,10 @@ ssh-terminal/
 
 - [x] **M0 环境与骨架**:国内源工具链、Gradle 工程、模块划分、本设计文档
 - [x] **M1 内核落地**:vendor + 补丁(去 JNI、抽象传输),工程编译通过(2026-08-22,首个 app-debug.apk)
-- [ ] **M2 SSH 打通**:单会话密码登录、显示、英文输入、resize、真机跑通 Claude Code TUI
-- [ ] **M3 中文输入**:IME InputConnection + 预编辑悬浮,主流中文输入法真机验证
-- [ ] **M4 保活**:tmux 自动接管、前台服务、keepalive、自动重连,杀 App 重开回到原会话
-- [ ] **M5 多窗口**:标签页、附加键条(闩锁 Ctrl/S-Tab/bracketed paste)
+- [x] **M2 SSH 打通**:单会话密码登录、显示、英文输入、resize(2026-08-22 模拟器×WSL sshd 验证;Claude Code TUI 待真机)
+- [~] **M3 中文输入**:commitText 上屏路径已验证(ADBKeyboard→中文到达远端并回显);预编辑悬浮待真机中文输入法(搜狗/百度/Gboard)验证
+- [x] **M4 保活**:tmux 自动接管 + 强杀 App 重连无缝回会话已验证(计数器跨强杀存活);弱网自动重连待真机验证
+- [~] **M5 多窗口**:标签页多会话已验证(vt1/vt2 独立);附加键条各键功能待逐一验证
 - [ ] **M6 多服务器**:主机管理 UI、Keystore 密码存储、TOFU 指纹
 - [ ] **M7 完成通知**:bell + 静默启发式
 - [ ] **M8 分屏**:≥840dp 双栏

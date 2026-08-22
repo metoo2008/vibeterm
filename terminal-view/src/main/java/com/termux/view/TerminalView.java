@@ -323,10 +323,11 @@ public final class TerminalView extends View {
         // text editor class so Chinese/Japanese/Korean IMEs enable composition. The composing
         // (preedit) text is kept local and drawn as an overlay at the cursor (see onDraw());
         // only committed text is sent to the remote.
-        // VISIBLE_PASSWORD + NO_SUGGESTIONS disable autocorrect/prediction interference,
-        // which terminals cannot tolerate.
+        // Deliberately NOT using TYPE_TEXT_VARIATION_VISIBLE_PASSWORD (termux's Samsung-keyboard
+        // workaround): password variations make Chinese IMEs force a latin-only keyboard, and
+        // MIUI additionally enters "secure input" mode which blacks out screenshots. Verified on
+        // a real MIUI device with Baidu IME. NO_SUGGESTIONS alone disables autocorrect enough.
         outAttrs.inputType = InputType.TYPE_CLASS_TEXT
-            | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
             | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
 
         // Note that IME_ACTION_NONE cannot be used as that makes it impossible to input newlines using the on-screen

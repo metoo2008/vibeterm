@@ -1,7 +1,8 @@
 package dev.vibeterm.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -43,6 +44,7 @@ fun ExtraKeysBar(
     ctrlActive: Boolean,
     altActive: Boolean,
     onKey: (BarKey) -> Unit,
+    onKeyLongPress: (BarKey) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -54,13 +56,25 @@ fun ExtraKeysBar(
     ) {
         BarKey.entries.forEach { key ->
             val active = (key == BarKey.CTRL && ctrlActive) || (key == BarKey.ALT && altActive)
-            KeyButton(key.label, active) { onKey(key) }
+            KeyButton(
+                label = key.label,
+                active = active,
+                onClick = { onKey(key) },
+                // ⌨ 长按呼出系统输入法选择器:接实体键盘时导航栏不显示切换图标,这是唯一入口
+                onLongClick = if (key == BarKey.KEYBOARD) ({ onKeyLongPress(key) }) else null,
+            )
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun KeyButton(label: String, active: Boolean, onClick: () -> Unit) {
+private fun KeyButton(
+    label: String,
+    active: Boolean,
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
+) {
     val bg = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
     val fg = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
     Box(
@@ -68,7 +82,7 @@ private fun KeyButton(label: String, active: Boolean, onClick: () -> Unit) {
             .padding(2.dp)
             .clip(RoundedCornerShape(6.dp))
             .background(bg)
-            .clickable(onClick = onClick)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Text(label, color = fg, fontSize = 13.sp, fontFamily = FontFamily.Monospace)

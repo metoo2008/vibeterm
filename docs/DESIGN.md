@@ -119,8 +119,9 @@ ssh-terminal/
 
 `TerminalView.onCreateInputConnection()` 补丁:
 
-- `outAttrs.inputType = TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | TYPE_TEXT_FLAG_NO_SUGGESTIONS`
-  (声明为真文本框 → 输入法启用中文模式;VISIBLE_PASSWORD + NO_SUGGESTIONS 关闭自动纠错/联想,避免干扰命令输入)
+- `outAttrs.inputType = TYPE_CLASS_TEXT | TYPE_TEXT_FLAG_NO_SUGGESTIONS`
+  (声明为真文本框 → 输入法启用中文模式;NO_SUGGESTIONS 关闭联想。**不能加 VISIBLE_PASSWORD**——真机实测:
+  密码类 variation 会让中文输入法强制英文键盘,MIUI 还会进入安全输入模式导致截图全黑,2026-08-22 小米平板+百度输入法验证)
 - `outAttrs.imeOptions = IME_ACTION_NONE | IME_FLAG_NO_FULLSCREEN | IME_FLAG_NO_EXTRACT_UI`
 - 返回自定义 `BaseInputConnection(view, fullEditor=true)`:
 
@@ -216,7 +217,7 @@ ssh-terminal/
 - [x] **M0 环境与骨架**:国内源工具链、Gradle 工程、模块划分、本设计文档
 - [x] **M1 内核落地**:vendor + 补丁(去 JNI、抽象传输),工程编译通过(2026-08-22,首个 app-debug.apk)
 - [x] **M2 SSH 打通**:单会话密码登录、显示、英文输入、resize(2026-08-22 模拟器×WSL sshd 验证;Claude Code TUI 待真机)
-- [~] **M3 中文输入**:commitText 上屏路径已验证(ADBKeyboard→中文到达远端并回显);预编辑悬浮待真机中文输入法(搜狗/百度/Gboard)验证
+- [x] **M3 中文输入**:真机(小米平板+百度输入法)拼音组合、候选词、"你好"上屏、UTF-8 到达远端全链路验证通过(2026-08-22)。注:硬件键盘模式下百度用自家浮窗组合(不走 setComposingText),我们的预编辑悬浮框适用于软键盘 inline 组合场景,留待日常使用观察
 - [x] **M4 保活**:tmux 自动接管 + 强杀 App 重连无缝回会话已验证(计数器跨强杀存活);弱网自动重连待真机验证
 - [~] **M5 多窗口**:标签页多会话已验证(vt1/vt2 独立);附加键条各键功能待逐一验证
 - [ ] **M6 多服务器**:主机管理 UI、Keystore 密码存储、TOFU 指纹

@@ -215,6 +215,12 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
             ctrlActive = viewClient.ctrl.value,
             altActive = viewClient.alt.value,
             onKey = ::sendBarKey,
+            onKeyLongPress = { key ->
+                if (key == BarKey.KEYBOARD) {
+                    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.showInputMethodPicker()
+                }
+            },
         )
     }
 }

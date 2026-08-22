@@ -192,7 +192,7 @@ ssh-terminal/
 ## 6. 数据与安全
 
 - 主机列表:`filesDir/hosts.json`(明文,不含密码)。
-- 密码:`EncryptedSharedPreferences`(Android Keystore AES256-GCM),键 `pw_<hostId>`。
+- 密码:AndroidKeyStore AES256-GCM 自研加密(不用已废弃的 security-crypto,其传递依赖 tink-android 与 sshlib 内嵌 tink 冲突),密文存私有 SharedPreferences,键 `pw_<hostId>`。
 - 主机指纹:`filesDir/known_hosts.json`,TOFU。
 - 无任何遥测/网络上报;App 只连用户配置的服务器。
 
@@ -214,7 +214,7 @@ ssh-terminal/
 ## 9. 里程碑
 
 - [x] **M0 环境与骨架**:国内源工具链、Gradle 工程、模块划分、本设计文档
-- [ ] **M1 内核落地**:vendor + 补丁(去 JNI、抽象传输),工程编译通过
+- [x] **M1 内核落地**:vendor + 补丁(去 JNI、抽象传输),工程编译通过(2026-08-22,首个 app-debug.apk)
 - [ ] **M2 SSH 打通**:单会话密码登录、显示、英文输入、resize、真机跑通 Claude Code TUI
 - [ ] **M3 中文输入**:IME InputConnection + 预编辑悬浮,主流中文输入法真机验证
 - [ ] **M4 保活**:tmux 自动接管、前台服务、keepalive、自动重连,杀 App 重开回到原会话

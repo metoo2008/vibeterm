@@ -141,7 +141,6 @@ class SshTerminalSession(
                     onConnectFailed(gen, "认证失败:用户名或密码错误", fatal = true)
                     return@thread
                 }
-                conn.setTCPNoDelay(true)
 
                 val ch = conn.openSession()
                 ch.requestPTY("xterm-256color", cols, rows, 0, 0, null)

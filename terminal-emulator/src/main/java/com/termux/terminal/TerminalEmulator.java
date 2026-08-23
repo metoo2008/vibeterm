@@ -2595,8 +2595,18 @@ public final class TerminalEmulator {
         }
     }
 
+    /**
+     * VibeTerm: cap paste length at the single chokepoint for ALL paste paths (clipboard key,
+     * middle-click, text selection, OSC). Runs BEFORE the two replaceAll() passes and the UTF-8
+     * encode below, so a pathological multi-hundred-MiB clipboard can't spawn several huge copies
+     * and OOM before the downstream byte-based input-queue cap would apply.
+     */
+    public static final int MAX_PASTE_CHARS = 1024 * 1024; // 1 Mi chars
+
     /** If DECSET 2004 is set, prefix paste with "\033[200~" and suffix with "\033[201~". */
     public void paste(String text) {
+        if (text == null) return;
+        if (text.length() > MAX_PASTE_CHARS) text = text.substring(0, MAX_PASTE_CHARS);
         // First: Always remove escape key and C1 control characters [0x80,0x9F]:
         text = text.replaceAll("(\u001B|[\u0080-\u009F])", "");
         // Second: Replace all newlines (\n) or CRLF (\r\n) with carriage returns (\r).

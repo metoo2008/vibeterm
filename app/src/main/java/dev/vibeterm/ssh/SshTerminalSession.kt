@@ -140,10 +140,14 @@ class SshTerminalSession(
     override fun onTransportWrite(data: ByteArray, offset: Int, count: Int) {
         if (state != State.CONNECTED) return
         val t = transport ?: return
+        // 先按 count 判断(在 copyOfRange 分配副本之前),避免超限时还白白复制一份大数组。
+        // 按「总字节数」限流(不能只按条数:一次粘贴就是一个任意大的数组),绝不动已入队字节。
+        if (!InputBackpressure.canEnqueue(t.pendingBytes.get(), count)) {
+            notifyInputBufferFull()
+            return
+        }
         val chunk = data.copyOfRange(offset, offset + count)
-        // 按「总字节数」限流(不能只按条数:一次粘贴就是一个任意大的数组)。超限即拒绝新输入,
-        // 绝不动已入队字节。远端停止读取时,读线程随后会触发重连。
-        if (t.pendingBytes.get() + chunk.size > MAX_PENDING_INPUT_BYTES || !t.queue.offer(chunk)) {
+        if (!t.queue.offer(chunk)) {
             notifyInputBufferFull()
             return
         }
@@ -487,8 +491,6 @@ class SshTerminalSession(
         private const val KEX_TIMEOUT_MS = (HOST_KEY_PROMPT_TIMEOUT_MS + 30_000L).toInt()
         private const val KEEPALIVE_INTERVAL_MS = 15_000L
         private const val WRITE_QUEUE_CAPACITY = 4096
-        /** 待发送输入总字节上限(约 4 MiB):按字节限流,防大文本粘贴堆积 OOM。 */
-        private const val MAX_PENDING_INPUT_BYTES = 4L * 1024 * 1024
         private const val STATUS_QUEUE_CAP = 64
         private const val FULL_MSG_MIN_INTERVAL_MS = 2_000L
         private const val BASE_RECONNECT_MS = 1_000L

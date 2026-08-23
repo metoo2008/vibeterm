@@ -11,7 +11,8 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 /**
- * 密码加密存储:AndroidKeyStore 中的 AES-256-GCM 密钥(密钥材料不出安全硬件),
+ * 密码加密存储:密钥由 AndroidKeyStore 管理(AES-256-GCM),通常不可导出;
+ * 是否有硬件(TEE/StrongBox)保护取决于具体设备,软件实现的设备会回退为软件保护。
  * 密文落在私有 SharedPreferences。不用 androidx.security-crypto,
  * 因为其传递依赖的 tink-android 与 sshlib 内嵌的 tink 类冲突,且该库已废弃。
  */

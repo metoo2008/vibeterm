@@ -18,7 +18,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.Executors
-import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
@@ -42,6 +41,7 @@ class SshTerminalSession(
 
     /** 主机公钥待确认:首连(Unknown)或密钥变更(changed=true)。由 UI 展示指纹后回调决定。 */
     class HostKeyPrompt(
+        val gen: Int,
         val host: String,
         val port: Int,
         val algorithm: String,
@@ -85,6 +85,13 @@ class SshTerminalSession(
     /** 单线程串行执行 resize;配合 [resizePending] 单槽合并,只保留最新尺寸。 */
     private val resizeExecutor = Executors.newSingleThreadExecutor { r -> Thread(r, "ssh-resize").apply { isDaemon = true } }
     private val resizePending = AtomicBoolean(false)
+
+    /**
+     * 本地状态提示专用线程:写入终端的输出队列在满时会阻塞等待主线程消费。若从主线程
+     * (如网络切换回调、onTransportStart)直接写,就会「主线程等主线程」死锁。全部经此后台
+     * 线程串行写入,保证既不阻塞调用方、又保持提示顺序。
+     */
+    private val statusExecutor = Executors.newSingleThreadExecutor { r -> Thread(r, "ssh-status").apply { isDaemon = true } }
 
     /** 保护 [generation] 与 [transport] 的原子读改写:切代与发布传输必须是一个不可分割的操作。 */
     private val lock = Any()
@@ -163,6 +170,7 @@ class SshTerminalSession(
         setState(gen, State.CLOSED, null)
         thread(name = "ssh-close", isDaemon = true) { if (dying != null) closeTransport(dying) }
         resizeExecutor.shutdownNow()
+        statusExecutor.shutdown()
         onTransportExited(0, "VibeTerm session closed")
     }
 
@@ -258,28 +266,37 @@ class SshTerminalSession(
                 if (gen != generation || userClosed) { rejected.set(true); return false }
                 val changed = r is KnownHosts.CheckResult.Mismatch
                 val previous = (r as? KnownHosts.CheckResult.Mismatch)?.storedFingerprint
-                val decision = SynchronousQueue<Boolean>()
-                mainHandler.post {
-                    hostKeyPrompt = HostKeyPrompt(
-                        host = hostname, port = port, algorithm = algorithm,
-                        fingerprint = KnownHosts.fingerprint(key),
-                        changed = changed, previousFingerprint = previous,
-                    ) { accepted ->
-                        // 信任必须以「成功落盘」为前提:保存失败则拒绝本次连接并提示,
-                        // 否则会出现“看似已信任、实则未固定公钥”的静默不一致。
-                        val effective = if (accepted) {
-                            val saved = runCatching { KnownHosts.save(ctx, hostname, port, algorithm, key) }.isSuccess
-                            if (!saved) postStatus("\r\n[VibeTerm] 主机指纹保存失败,连接已取消。")
-                            saved
-                        } else false
-                        hostKeyPrompt = null
-                        decision.offer(effective)
-                    }
+                // 容量 1 的队列:即使决定先于 poll 到达也不会丢(SynchronousQueue 会丢)。
+                val decision = ArrayBlockingQueue<Boolean>(1)
+                val decided = AtomicBoolean(false)
+                val holder = arrayOfNulls<HostKeyPrompt>(1)
+                val prompt = HostKeyPrompt(
+                    gen = gen, host = hostname, port = port, algorithm = algorithm,
+                    fingerprint = KnownHosts.fingerprint(key),
+                    changed = changed, previousFingerprint = previous,
+                ) { accepted ->
+                    // 幂等:按钮、超时唤醒、切代 resolveHostKeyPrompt 可能都调它,只认第一次。
+                    if (!decided.compareAndSet(false, true)) return@HostKeyPrompt
+                    // 信任必须以「成功落盘」为前提:保存失败则拒绝本次连接并提示,
+                    // 否则会出现“看似已信任、实则未固定公钥”的静默不一致。
+                    val effective = if (accepted) {
+                        val saved = runCatching { KnownHosts.save(ctx, hostname, port, algorithm, key) }.isSuccess
+                        if (!saved) postStatus("\r\n[VibeTerm] 主机指纹保存失败,连接已取消。")
+                        saved
+                    } else false
+                    // 只清除“自己这一个”弹窗,避免误清新世代刚弹出的弹窗
+                    mainHandler.post { if (hostKeyPrompt === holder[0]) hostKeyPrompt = null }
+                    decision.offer(effective)
                 }
-                val accepted = decision.poll(HOST_KEY_PROMPT_TIMEOUT_MS, TimeUnit.MILLISECONDS) ?: false
+                holder[0] = prompt
+                // 只在仍是当前世代时展示;否则立即按拒绝处理,不干扰新世代
+                mainHandler.post {
+                    if (gen == generation && !userClosed) hostKeyPrompt = prompt else prompt.onDecision(false)
+                }
+                val accepted = decision.poll(HOST_KEY_PROMPT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+                    ?: run { prompt.onDecision(false); false } // 超时:唤醒并按拒绝
                 if (!accepted) {
                     rejected.set(true)
-                    mainHandler.post { if (hostKeyPrompt != null) hostKeyPrompt = null }
                     postStatus(
                         if (changed) "\r\n[VibeTerm] 主机指纹已变更,连接被拒绝(谨防中间人攻击)。"
                         else "\r\n[VibeTerm] 未确认主机指纹,连接已取消。"
@@ -391,10 +408,14 @@ class SshTerminalSession(
         try { t.conn.close() } catch (_: Exception) {}
     }
 
-    /** 向本地终端(不经远端)追加提示文本。 */
+    /** 向本地终端(不经远端)追加提示文本。经后台线程写入,绝不阻塞调用方(见 statusExecutor 说明)。 */
     private fun postStatus(text: String) {
         val bytes = text.toByteArray(Charsets.UTF_8)
-        onTransportData(bytes, 0, bytes.size)
+        try {
+            statusExecutor.execute { onTransportData(bytes, 0, bytes.size) }
+        } catch (_: Exception) {
+            // executor 已关闭(会话终结),忽略
+        }
     }
 
     /** 只有仍是当前世代(或会话终结)时才应用状态,防止旧世代覆盖新世代状态。 */

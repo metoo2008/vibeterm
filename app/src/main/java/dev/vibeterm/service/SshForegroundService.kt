@@ -23,7 +23,14 @@ class SshForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // 系统按 START_STICKY 重启进程时会传入 null intent(见 Service#START_STICKY 文档)。
+        // 此时没有会话上下文,若仍 startForeground 会出现「0 会话却常驻通知耗电」。直接自停。
         val count = intent?.getIntExtra(EXTRA_COUNT, 0) ?: 0
+        if (intent == null || count <= 0) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+            return START_NOT_STICKY
+        }
         val type = if (Build.VERSION.SDK_INT >= 34) ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE else 0
         ServiceCompat.startForeground(this, NOTIFICATION_ID, buildNotification(this, count), type)
         return START_STICKY

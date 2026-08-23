@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <verification-metadata xmlns="https://schema.gradle.org/dependency-verification" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://schema.gradle.org/dependency-verification https://schema.gradle.org/dependency-verification/dependency-verification-1.3.xsd">
    <configuration>
-      <verify-metadata>true</verify-metadata>
+      <!-- 只校验实际构件(jar/aar)的 SHA-256(安全相关部分);不校验 pom/.module 元数据文件,
+           因为同一构件的元数据文件在不同镜像间可能字节级不同(生成于阿里云镜像、CI 可能回落官方源),
+           会造成跨环境构建脆弱。构件内容本身在各源一致,故安全性不受影响。 -->
+      <verify-metadata>false</verify-metadata>
       <verify-signatures>false</verify-signatures>
    </configuration>
    <components>

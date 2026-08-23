@@ -54,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -181,7 +182,12 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface),
         ) {
-            IconButton(onClick = onShowHosts) {
+            // 顶栏所有控件禁止获得硬件键盘焦点:终端界面里实体键盘专属终端,
+            // 否则 TerminalView 一旦失焦,回车会“点击”第一个可聚焦按钮(曾导致按回车退出终端)
+            IconButton(
+                onClick = onShowHosts,
+                modifier = Modifier.focusProperties { canFocus = false },
+            ) {
                 Icon(Icons.Filled.Menu, contentDescription = "主机列表")
             }
             Row(
@@ -202,7 +208,9 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
                 }
             }
             if (isWide) {
-                TextButton(onClick = {
+                TextButton(
+                    modifier = Modifier.focusProperties { canFocus = false },
+                    onClick = {
                     if (!split) {
                         val other = sessions.firstOrNull { it != left } ?: SessionManager.openSibling(left)
                         if (other == null) {
@@ -221,11 +229,14 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
                     }
                 }) { Text(if (split) "并屏" else "分屏") }
             }
-            IconButton(onClick = {
-                if (SessionManager.openSibling(focusedSession() ?: left) == null) {
-                    Toast.makeText(context, "内存中没有该主机的密码,请从主机列表打开新窗口", Toast.LENGTH_SHORT).show()
-                }
-            }) {
+            IconButton(
+                modifier = Modifier.focusProperties { canFocus = false },
+                onClick = {
+                    if (SessionManager.openSibling(focusedSession() ?: left) == null) {
+                        Toast.makeText(context, "内存中没有该主机的密码,请从主机列表打开新窗口", Toast.LENGTH_SHORT).show()
+                    }
+                },
+            ) {
                 Icon(Icons.Filled.Add, contentDescription = "新窗口")
             }
         }
@@ -370,6 +381,9 @@ private fun TerminalPane(
                     setTextSize(with(density) { fontSp.sp.toPx() }.toInt())
                     setTypeface(typeface)
                     viewClient.view = this
+                    // 组合期 view 尚未挂进窗口,requestFocus 会静默失败;post 到 attach 之后执行。
+                    // 曾导致:TerminalView 失焦 → 硬件回车被焦点系统交给顶栏按钮 → “按回车退出终端”
+                    post { requestFocus() }
                 }
             },
             update = { view ->
@@ -384,8 +398,9 @@ private fun TerminalPane(
                     session.attachedView = view
                     view.attachSession(session)
                     view.onScreenUpdated()
-                    if (focused) view.requestFocus()
                 }
+                // 焦点兜底:每次重组都确保焦点面板真正持有 Android 焦点
+                if (focused && !view.hasFocus()) view.requestFocus()
             },
         )
 
@@ -404,7 +419,10 @@ private fun TerminalPane(
                         .padding(horizontal = 12.dp, vertical = 4.dp),
                 ) {
                     Text("连接已断开", color = TermRed, fontSize = 13.sp)
-                    TextButton(onClick = { session.reconnect() }) { Text("立即重连") }
+                    TextButton(
+                        onClick = { session.reconnect() },
+                        modifier = Modifier.focusProperties { canFocus = false },
+                    ) { Text("立即重连") }
                 }
             }
             SshTerminalSession.State.CLOSED -> {
@@ -419,7 +437,10 @@ private fun TerminalPane(
                         .padding(horizontal = 12.dp, vertical = 4.dp),
                 ) {
                     Text("会话已结束", color = TermGray, fontSize = 13.sp)
-                    TextButton(onClick = { SessionManager.close(session) }) { Text("关闭窗口") }
+                    TextButton(
+                        onClick = { SessionManager.close(session) },
+                        modifier = Modifier.focusProperties { canFocus = false },
+                    ) { Text("关闭窗口") }
                 }
             }
             else -> {}
@@ -454,6 +475,7 @@ private fun SessionChip(
             .padding(horizontal = 3.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(50))
             .background(bg)
+            .focusProperties { canFocus = false }
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 7.dp),
     ) {
@@ -474,7 +496,10 @@ private fun SessionChip(
             Icon(
                 Icons.Filled.Close,
                 contentDescription = "关闭窗口",
-                modifier = Modifier.size(14.dp).clickable(onClick = onClose),
+                modifier = Modifier
+                    .size(14.dp)
+                    .focusProperties { canFocus = false }
+                    .clickable(onClick = onClose),
                 tint = TermGray,
             )
         }

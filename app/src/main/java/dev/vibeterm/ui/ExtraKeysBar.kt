@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -83,6 +84,8 @@ private fun KeyButton(
             .padding(2.dp)
             .clip(RoundedCornerShape(6.dp))
             .background(bg)
+            // 键条按钮不参与硬件键盘焦点链,终端界面里实体键盘专属 TerminalView
+            .focusProperties { canFocus = false }
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {

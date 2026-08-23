@@ -1,4 +1,14 @@
-# VibeTerm v0.2.5 — 安全修复版 / Security Hardening Release
+# VibeTerm v0.3.0 — Android 16 / Google Play 就绪 · Security Hardening
+
+## 本版重点
+
+- **targetSdk / compileSdk 升到 36(Android 16)**,满足 Google Play 自 2026-08-31 起对新应用与更新的 API 36 要求;工具链同步升级(AGP 8.11.1 / Gradle 8.13)。
+- **完整适配 edge-to-edge**:Android 15+ 强制的全面屏(内容延伸到系统栏后)已正确处理——顶栏避开状态栏、底部附加键条避开手势区、软键盘弹出时键条贴合其上方。已在 Android 16 模拟器实测。
+- 以下为累计的安全加固说明。
+
+---
+
+
 
 **为 vibe coding 而生的 Android SSH 终端**:原生中文输入、tmux 断线保活、多窗口/平板分屏、锁屏批准 AI 代理。
 
@@ -40,11 +50,11 @@
 
 ## 📦 安装
 
-下载下方 `app-release.apk`,在手机上允许「安装未知来源应用」后安装。要求 Android 8.0 (API 26) 及以上。
+下载下方 `app-release.apk`,在手机上允许「安装未知来源应用」后安装。要求 Android 8.0 (API 26) 及以上,已适配至 Android 16。
 
 **SHA-256 校验**(用于核对下载的 APK 与发布者上传的二进制一致;注:Android APK 默认不逐字节可复现,该值对应本次发布上传的具体文件,不代表可由源码重建出相同哈希):
 ```
-9ba05865915269490e724157c8831227e880f5d41390b4a6069cacc953a76d16
+498c46aa8a4b6f5b7582bdda0ffadc3b08462cf60706ac96cd253b6d8eca8b78
 ```
 
 **服务器建议**:安装 tmux、UTF-8 locale;Claude Code 设置 `preferredNotifChannel: terminal_bell` 可获得精确的任务完成通知。
@@ -60,4 +70,4 @@ SSH 密钥认证(ed25519)、服务器 tmux 会话浏览、mosh 传输、并发�
 
 ---
 
-GPL-3.0 · 完整变更见 `git log v0.2.0..v0.2.5` · 供应链取舍见 SECURITY.md · Issues 与 PR 欢迎
+GPL-3.0 · 完整变更见 `git log v0.2.0..v0.3.0` · 供应链取舍见 SECURITY.md · Issues 与 PR 欢迎

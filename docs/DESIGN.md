@@ -47,8 +47,9 @@
 | SSH 库 | **org.connectbot:sshlib**(Apache 2.0) | 专为 Android 打造,内置 ed25519/curve25519,免 JCE Provider 折腾;ConnectBot 多年生产验证 |
 | UI 框架 | Kotlin + Jetpack Compose;终端本体为传统自定义 View 经 `AndroidView` 嵌入 | 终端渲染/IME 必须原生 View;应用外壳 Compose 开发效率高 |
 | 应用名/包名 | VibeTerm / `dev.vibeterm`(可随时改) | 占位名 |
-| SDK 版本 | minSdk 26 / compileSdk = targetSdk 34 | 26 覆盖前台服务现代语义;34 匹配 AGP 8.5 |
-| 构建 | AGP 8.5.2 + Gradle 8.9 + Kotlin 2.0.21,JDK 17 | 2026 年初稳定组合 |
+| SDK 版本 | minSdk 26 / compileSdk = targetSdk 36(Android 16) | 26 覆盖前台服务现代语义;36 满足 Google Play 自 2026-08-31 起的 API 36 要求 |
+| 构建 | AGP 8.11.1 + Gradle 8.13 + Kotlin 2.0.21,JDK 17 | 首个官方支持 compileSdk 36 的 AGP 稳定线 |
+| edge-to-edge | enableEdgeToEdge() + Compose systemBars/imePadding | targetSdk 35+ 强制全面屏;终端屏顶栏/键条/软键盘均按 insets 适配 |
 | 网络环境 | **所有下载走国内镜像**(用户硬性要求) | Gradle→腾讯镜像,Maven→阿里云,工具链→npmmirror/华为云/aka.ms,GitHub 内容→gh-proxy 代理链 |
 
 ## 4. 总体架构

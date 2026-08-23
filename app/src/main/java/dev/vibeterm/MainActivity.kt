@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ import dev.vibeterm.ui.theme.applyTerminalPalette
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge() // targetSdk 35+ 强制 edge-to-edge;显式启用以正确处理系统栏
         super.onCreate(savedInstanceState)
         SessionManager.init(this)
         Notifications.ensureChannels(this)

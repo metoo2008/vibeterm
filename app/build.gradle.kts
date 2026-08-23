@@ -15,14 +15,14 @@ val keystoreProps = Properties().apply {
 
 android {
     namespace = "dev.vibeterm"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.vibeterm"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 7
-        versionName = "0.2.5"
+        targetSdk = 36
+        versionCode = 8
+        versionName = "0.3.0"
     }
 
     signingConfigs {

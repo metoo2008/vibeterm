@@ -1,19 +1,21 @@
-# VibeTerm v0.2.1 — 安全修复版 / Security Hardening Release
+# VibeTerm v0.2.2 — 安全修复版 / Security Hardening Release
 
 **为 vibe coding 而生的 Android SSH 终端**:原生中文输入、tmux 断线保活、多窗口/平板分屏、锁屏批准 AI 代理。
 
 *An Android SSH terminal built for vibe coding — native CJK input, tmux-backed session persistence, split-screen, and lock-screen approval for AI coding agents.*
 
-> 本版本经过**两轮独立安全审计**并完成全部高/中风险整改,是首个推荐用于日常使用的版本。
-> This release incorporates fixes from **two rounds of independent security audit** (all high/medium findings resolved).
+> 本版本经过**三轮独立安全审计**并完成全部高/中风险整改,是首个推荐用于日常使用的版本。
+> This release incorporates fixes from **three rounds of independent security audit** (all high/medium findings resolved).
 
 ---
 
-## 🔒 安全加固亮点(v0.2.0 → v0.2.1)
+## 🔒 安全加固亮点(v0.2.0 → v0.2.2)
 
 - **主机公钥确认**:首次连接与密钥变更时展示 SHA256 指纹,由你人工核对确认后才发送密码——不再静默信任,杜绝首连中间人窃密码。
 - **修复 Terrapin 漏洞**:SSH 库升级到 2.2.22,修复 CVE-2023-48795。
-- **重连世代隔离**:每次重连封装为独立不可变会话对象,彻底消除旧连接线程误关新连接、覆盖新状态的竞态(快速切网压力测试通过)。
+- **重连世代隔离**:每次重连封装为独立不可变会话对象,「切代 + 发布连接」用锁做成原子操作,彻底消除旧连接线程误关/覆盖新连接的竞态(快速切网压力测试通过)。
+- **指纹保存失败即拒连**:点「信任并连接」但公钥未能落盘时,连接被取消并明确提示,不再出现「看似已信任、实则未固定」的静默不一致。
+- **依赖完整性校验**:新增 `gradle/verification-metadata.xml`,对全部依赖构件做 SHA-256 校验,防镜像被污染;SSH 库跟进上游维护版本 2.2.48。
 - **锁屏批准需认证**:通知的「确认/打断」按钮默认要求先解锁(指纹即可);低于 Android 12 无法强制认证的设备上则不提供直连按键动作。
 - **OSC 52 默认关闭**:失陷服务器无法再劫持你的剪贴板,需要时可在设置中开启。
 - **编辑主机清旧密码**:改动地址/端口/用户名后强制重新输入密码,避免把旧凭据发往新服务器。
@@ -38,7 +40,7 @@
 
 **SHA-256 校验**(安全版建议核对):
 ```
-edd6f12338775d28b16bb0e6b44c9ae96199a956ef5f1e554e10b5c79e23fecc
+06e84447d9a6b47edb544a086d92d7ee39954babba6543bf53baedf0bf138c4a
 ```
 
 **服务器建议**:安装 tmux、UTF-8 locale;Claude Code 设置 `preferredNotifChannel: terminal_bell` 可获得精确的任务完成通知。
@@ -50,8 +52,8 @@ edd6f12338775d28b16bb0e6b44c9ae96199a956ef5f1e554e10b5c79e23fecc
 
 ## 🔜 后续计划
 
-SSH 密钥认证(ed25519)、服务器 tmux 会话浏览、mosh 传输、依赖完整性校验元数据。
+SSH 密钥认证(ed25519)、服务器 tmux 会话浏览、mosh 传输、并发时序自动化测试覆盖。
 
 ---
 
-GPL-3.0 · 完整变更见 `git log v0.2.0..v0.2.1` · Issues 与 PR 欢迎
+GPL-3.0 · 完整变更见 `git log v0.2.0..v0.2.2` · Issues 与 PR 欢迎

@@ -21,8 +21,8 @@ android {
         applicationId = "dev.vibeterm"
         minSdk = 26
         targetSdk = 34
-        versionCode = 3
-        versionName = "0.2.1"
+        versionCode = 4
+        versionName = "0.2.2"
     }
 
     signingConfigs {
@@ -67,8 +67,8 @@ dependencies {
     implementation(project(":terminal-emulator"))
 
     // ConnectBot 维护的 Android 原生 SSH 库(Apache 2.0),内置 ed25519/curve25519,无需折腾 JCE Provider。
-    // 必须 >= 2.2.22:更早版本受 Terrapin(CVE-2023-48795)影响
-    implementation("org.connectbot:sshlib:2.2.22")
+    // >= 2.2.22 修 Terrapin(CVE-2023-48795);跟进上游维护版本
+    implementation("org.connectbot:sshlib:2.2.48")
 
     implementation(platform("androidx.compose:compose-bom:2024.09.03"))
     implementation("androidx.compose.ui:ui")

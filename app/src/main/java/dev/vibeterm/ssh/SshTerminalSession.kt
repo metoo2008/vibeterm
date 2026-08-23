@@ -82,19 +82,20 @@ class SshTerminalSession(
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    /** 单线程串行执行 resize,避免旋转/分屏时线程突增;任务执行时读最新 cols/rows,天然合并陈旧请求。 */
+    /** 单线程串行执行 resize;配合 [resizePending] 单槽合并,只保留最新尺寸。 */
     private val resizeExecutor = Executors.newSingleThreadExecutor { r -> Thread(r, "ssh-resize").apply { isDaemon = true } }
+    private val resizePending = AtomicBoolean(false)
+
+    /** 保护 [generation] 与 [transport] 的原子读改写:切代与发布传输必须是一个不可分割的操作。 */
+    private val lock = Any()
 
     @Volatile private var userClosed = false
 
-    /** 重连代数:每次 connect() 递增,旧代的 IO 线程检测到不匹配即退出。 */
+    /** 重连代数:每次 connect() 递增,旧代的 IO 线程检测到不匹配即退出。仅在 [lock] 内修改。 */
     @Volatile private var generation = 0
 
-    /** 当前世代的传输资源;仅在连接成功后赋值,断开/切代后置空。 */
+    /** 当前世代的传输资源;仅在连接成功后赋值,断开/切代后置空。仅在 [lock] 内修改。 */
     @Volatile private var transport: Transport? = null
-
-    /** 本次连接尝试是否因用户拒绝主机指纹而失败 —— 若是则禁止自动重连。 */
-    @Volatile private var hostKeyRejected = false
 
     @Volatile private var cols = 80
     @Volatile private var rows = 24
@@ -129,9 +130,13 @@ class SshTerminalSession(
     override fun onTransportResize(columns: Int, rows: Int, cellWidthPixels: Int, cellHeightPixels: Int) {
         this.cols = columns
         this.rows = rows
-        val t = transport ?: return
+        // 单槽合并:已有一个待执行的 resize 时不再入队,任务运行时读最新的 cols/rows。
+        // 这样旋转/分屏/软键盘动画期间即便 resizePTY 阻塞,任务也最多堆积一个。
+        if (!resizePending.compareAndSet(false, true)) return
         try {
             resizeExecutor.execute {
+                resizePending.set(false)
+                val t = transport ?: return@execute
                 if (t.gen != generation) return@execute
                 try {
                     t.ch.resizePTY(this.cols, this.rows, 0, 0)
@@ -139,15 +144,20 @@ class SshTerminalSession(
                 }
             }
         } catch (_: Exception) {
-            // executor 已关闭(会话结束),忽略
+            // executor 已关闭(会话结束):复位标记,忽略
+            resizePending.set(false)
         }
     }
 
     override fun onTransportKill() {
         userClosed = true
-        val gen = ++generation
-        val dying = transport
-        transport = null
+        val gen: Int
+        val dying: Transport?
+        synchronized(lock) {
+            gen = ++generation
+            dying = transport
+            transport = null
+        }
         mainHandler.removeCallbacks(silenceChecker)
         resolveHostKeyPrompt(false)
         setState(gen, State.CLOSED, null)
@@ -182,22 +192,27 @@ class SshTerminalSession(
 
     private fun connect() {
         if (userClosed) return
-        val gen = ++generation
-        hostKeyRejected = false
+        // 切代与摘下旧 transport 必须原子:否则旧连接线程可能在新代 bump 之后才发布,覆盖新连接。
+        val gen: Int
+        val previous: Transport?
+        synchronized(lock) {
+            gen = ++generation
+            previous = transport
+            transport = null
+        }
         // 唤醒可能仍在等待用户决定的旧世代指纹提示线程,避免线程堆积
         resolveHostKeyPrompt(false)
-        // 立即接管旧世代:置空全局引用并异步关闭,旧线程 gen 检查失败后自然退出
-        val previous = transport
-        transport = null
         if (previous != null) thread(name = "ssh-supersede", isDaemon = true) { closeTransport(previous) }
         setState(gen, State.CONNECTING, null)
+        // 本次连接尝试独立的“指纹被拒”标记(不放会话全局,避免旧线程污染新连接的重连判定)
+        val rejected = AtomicBoolean(false)
         thread(name = "ssh-connect-$gen") {
             var conn: Connection? = null
             var ch: SshChannel? = null
             try {
                 conn = Connection(profile.host, profile.safePort)
                 conn.connect({ hostname, port, algorithm, key ->
-                    verifyHostKey(gen, hostname, port, algorithm, key)
+                    verifyHostKey(gen, rejected, hostname, port, algorithm, key)
                 }, CONNECT_TIMEOUT_MS, KEX_TIMEOUT_MS)
 
                 if (gen != generation || userClosed) { conn.close(); return@thread }
@@ -211,10 +226,13 @@ class SshTerminalSession(
                 ch.requestPTY("xterm-256color", cols, rows, 0, 0, null)
                 if (tmuxName != null) ch.execCommand(Tmux.attachCommand(tmuxName)) else ch.startShell()
 
-                if (gen != generation || userClosed) { ch.close(); conn.close(); return@thread }
                 val t = Transport(gen, conn, ch, ch.stdin, ArrayBlockingQueue(WRITE_QUEUE_CAPACITY))
                 t.connectedAt = SystemClock.elapsedRealtime()
-                transport = t
+                // 原子发布:校验仍是当前代 + 未关闭,同一临界区内赋值,杜绝被后续切代覆盖。
+                val published = synchronized(lock) {
+                    if (gen != generation || userClosed) false else { transport = t; true }
+                }
+                if (!published) { ch.close(); conn.close(); return@thread }
                 setState(gen, State.CONNECTED, null)
 
                 startWriter(t)
@@ -226,18 +244,18 @@ class SshTerminalSession(
                 try { ch?.close() } catch (_: Exception) {}
                 try { conn?.close() } catch (_: Exception) {}
                 // 用户拒绝指纹(或指纹异常)属致命,禁止自动重连;仅网络类失败才退避重试
-                onConnectFailed(gen, e.message ?: e.javaClass.simpleName, fatal = hostKeyRejected)
+                onConnectFailed(gen, e.message ?: e.javaClass.simpleName, fatal = rejected.get())
             }
         }
     }
 
     /** 在连接线程上校验主机公钥;Unknown/Mismatch 时阻塞等待 UI 用户决定(带超时,超时按拒绝)。 */
-    private fun verifyHostKey(gen: Int, hostname: String, port: Int, algorithm: String, key: ByteArray): Boolean {
+    private fun verifyHostKey(gen: Int, rejected: AtomicBoolean, hostname: String, port: Int, algorithm: String, key: ByteArray): Boolean {
         val ctx = SessionManager.appContext
         return when (val r = KnownHosts.check(ctx, hostname, port, algorithm, key)) {
             KnownHosts.CheckResult.Trusted -> true
             KnownHosts.CheckResult.Unknown, is KnownHosts.CheckResult.Mismatch -> {
-                if (gen != generation || userClosed) { hostKeyRejected = true; return false }
+                if (gen != generation || userClosed) { rejected.set(true); return false }
                 val changed = r is KnownHosts.CheckResult.Mismatch
                 val previous = (r as? KnownHosts.CheckResult.Mismatch)?.storedFingerprint
                 val decision = SynchronousQueue<Boolean>()
@@ -247,15 +265,20 @@ class SshTerminalSession(
                         fingerprint = KnownHosts.fingerprint(key),
                         changed = changed, previousFingerprint = previous,
                     ) { accepted ->
-                        // save 失败也要放行决定,避免连接线程一直卡在 poll
-                        if (accepted) runCatching { KnownHosts.save(ctx, hostname, port, algorithm, key) }
+                        // 信任必须以「成功落盘」为前提:保存失败则拒绝本次连接并提示,
+                        // 否则会出现“看似已信任、实则未固定公钥”的静默不一致。
+                        val effective = if (accepted) {
+                            val saved = runCatching { KnownHosts.save(ctx, hostname, port, algorithm, key) }.isSuccess
+                            if (!saved) postStatus("\r\n[VibeTerm] 主机指纹保存失败,连接已取消。")
+                            saved
+                        } else false
                         hostKeyPrompt = null
-                        decision.offer(accepted)
+                        decision.offer(effective)
                     }
                 }
                 val accepted = decision.poll(HOST_KEY_PROMPT_TIMEOUT_MS, TimeUnit.MILLISECONDS) ?: false
                 if (!accepted) {
-                    hostKeyRejected = true
+                    rejected.set(true)
                     mainHandler.post { if (hostKeyPrompt != null) hostKeyPrompt = null }
                     postStatus(
                         if (changed) "\r\n[VibeTerm] 主机指纹已变更,连接被拒绝(谨防中间人攻击)。"
@@ -335,7 +358,7 @@ class SshTerminalSession(
         if (userClosed || t.gen != generation) return
         if (!t.disconnected.compareAndSet(false, true)) return // 本代只处理一次
         closeTransport(t)
-        if (transport === t) transport = null
+        synchronized(lock) { if (transport === t) transport = null }
         postStatus("\r\n[VibeTerm] 连接已断开${if (message != null) ":$message" else ""}")
         setState(t.gen, State.DISCONNECTED, message)
         scheduleReconnect(t)

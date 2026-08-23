@@ -90,28 +90,37 @@ object Notifications {
         )
 
         val icon = Icon.createWithResource(context, R.drawable.ic_notification)
+        // 默认要求先解锁(指纹即可)才发送输入,防止拿到设备的人替 AI 放行;可在设置里关闭。
+        val requireAuth = !Prefs.lockscreenApproveWithoutAuth(context)
         val notification = Notification.Builder(context, CHANNEL_ACTIVITY)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(text)
             .setContentIntent(contentPending)
             .setAutoCancel(true)
-            // 锁屏遥控:不解锁不切 App,直接把按键写进会话
+            // 锁屏遥控:把按键写进会话(默认需解锁认证)
             .addAction(
-                Notification.Action.Builder(
-                    icon, "✅ 确认(回车)",
-                    sendInputPending(context, session, "\r", notificationId, requestCodeOffset = 1),
-                ).build()
+                notificationAction(icon, "✅ 确认(回车)",
+                    sendInputPending(context, session, "\r", notificationId, requestCodeOffset = 1), requireAuth)
             )
             .addAction(
-                Notification.Action.Builder(
-                    icon, "✋ 打断(Esc)",
-                    sendInputPending(context, session, "\u001b", notificationId, requestCodeOffset = 2),
-                ).build()
+                notificationAction(icon, "✋ 打断(Esc)",
+                    sendInputPending(context, session, "\u001b", notificationId, requestCodeOffset = 2), requireAuth)
             )
             .build()
-
         context.getSystemService(NotificationManager::class.java).notify(notificationId, notification)
+    }
+
+    private fun notificationAction(
+        icon: Icon,
+        title: String,
+        pending: PendingIntent,
+        requireAuth: Boolean,
+    ): Notification.Action {
+        val builder = Notification.Action.Builder(icon, title, pending)
+        // API 31+:动作触发前要求设备认证(锁屏时会先弹解锁/生物识别)
+        if (requireAuth && Build.VERSION.SDK_INT >= 31) builder.setAuthenticationRequired(true)
+        return builder.build()
     }
 
     private fun sendInputPending(

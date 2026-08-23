@@ -5,6 +5,9 @@ on:
     branches: [master, main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,7 +17,12 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: android-actions/setup-android@v3
+      # SHA 固定,避免可移动标签被篡改(setup-android v3.2.2)
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest --no-daemon
+      - name: Lint
+        run: ./gradlew :app:lintDebug --no-daemon
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4

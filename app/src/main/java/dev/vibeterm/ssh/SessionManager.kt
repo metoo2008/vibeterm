@@ -109,8 +109,17 @@ object SessionManager {
         if (selected == session) {
             selected = sessions.getOrNull((index - 1).coerceAtLeast(0))
         }
+        // 该主机已无任何窗口时,清除内存中的明文密码,不让它驻留到进程结束
+        if (sessions.none { it.profile.id == session.profile.id }) {
+            passwordCache.remove(session.profile.id)
+        }
         SshForegroundService.update(appContext, sessions.size)
         persistWindows()
+    }
+
+    /** 删除主机时清理其内存密码缓存(加密存储的清除由调用方负责)。 */
+    fun forgetPassword(hostId: String) {
+        passwordCache.remove(hostId)
     }
 
     /**

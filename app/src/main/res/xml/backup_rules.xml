@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 及以下的全量备份排除规则(与 allowBackup=false 冗余保险) -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="secrets.xml" />
+    <exclude domain="sharedpref" path="ui.xml" />
+    <exclude domain="file" path="hosts.json" />
+    <exclude domain="file" path="known_hosts.json" />
+    <exclude domain="file" path="last_windows.json" />
+</full-backup-content>

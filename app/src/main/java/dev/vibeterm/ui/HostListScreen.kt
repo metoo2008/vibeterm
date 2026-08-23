@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import dev.vibeterm.data.HostProfile
 import dev.vibeterm.data.HostStore
 import dev.vibeterm.data.Prefs
+import com.termux.terminal.TerminalEmulator
 import dev.vibeterm.data.SecureStore
 import dev.vibeterm.ssh.SessionManager
 import dev.vibeterm.ui.theme.TermGray
@@ -156,6 +157,7 @@ fun HostListScreen(onOpenSession: () -> Unit) {
                         onDelete = {
                             hosts.remove(host)
                             SecureStore.removePassword(context, host.id)
+                            SessionManager.forgetPassword(host.id)
                             persist()
                         },
                     )
@@ -169,9 +171,20 @@ fun HostListScreen(onOpenSession: () -> Unit) {
             initial = editing,
             onDismiss = { showAdd = false; editing = null },
             onSave = { profile, password ->
+                val old = hosts.firstOrNull { it.id == profile.id }
+                // 安全:改了地址/端口/用户名意味着可能是另一台机器,旧密码不能沿用,
+                // 强制清除已存密码(含内存缓存),要求重新输入,避免把旧凭据发给新服务器
+                val identityChanged = old != null &&
+                    (old.host != profile.host || old.port != profile.port || old.username != profile.username)
                 val index = hosts.indexOfFirst { it.id == profile.id }
                 if (index >= 0) hosts[index] = profile else hosts.add(profile)
-                if (password.isNotEmpty()) SecureStore.putPassword(context, profile.id, password)
+                when {
+                    password.isNotEmpty() -> SecureStore.putPassword(context, profile.id, password)
+                    identityChanged -> {
+                        SecureStore.removePassword(context, profile.id)
+                        SessionManager.forgetPassword(profile.id)
+                    }
+                }
                 persist()
                 showAdd = false
                 editing = null
@@ -257,6 +270,8 @@ private fun SettingsDialog(onDismiss: () -> Unit) {
     val context = LocalContext.current
     var bell by remember { mutableStateOf(Prefs.notifyBell(context)) }
     var silence by remember { mutableStateOf(Prefs.notifySilence(context)) }
+    var noAuth by remember { mutableStateOf(Prefs.lockscreenApproveWithoutAuth(context)) }
+    var osc52 by remember { mutableStateOf(Prefs.osc52Clipboard(context)) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -273,6 +288,20 @@ private fun SettingsDialog(onDismiss: () -> Unit) {
                     description = "持续输出的任务停止输出后提醒「可能已完成」",
                     checked = silence,
                 ) { silence = it; Prefs.setNotifySilence(context, it) }
+                SettingSwitch(
+                    title = "锁屏免解锁批准",
+                    description = "关:锁屏点通知的确认/打断需先解锁(指纹即可),更安全",
+                    checked = noAuth,
+                ) { noAuth = it; Prefs.setLockscreenApproveWithoutAuth(context, it) }
+                SettingSwitch(
+                    title = "允许远端写剪贴板 (OSC 52)",
+                    description = "关:失陷服务器无法劫持你的剪贴板。除非明确需要,建议保持关闭",
+                    checked = osc52,
+                ) {
+                    osc52 = it
+                    Prefs.setOsc52Clipboard(context, it)
+                    TerminalEmulator.allowOsc52Clipboard = it
+                }
                 Text(
                     "字号:在终端上双指缩放调整,自动记忆\n切输入法:Ctrl+空格 或长按键条 ⌨",
                     fontSize = 12.sp,
@@ -331,6 +360,7 @@ private fun HostEditDialog(
                     label = { Text(if (initial == null) "密码" else "密码(留空则不修改)") },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Switch(checked = useTmux, onCheckedChange = { useTmux = it })

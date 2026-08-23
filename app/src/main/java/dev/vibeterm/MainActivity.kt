@@ -28,6 +28,8 @@ class MainActivity : ComponentActivity() {
         SessionManager.init(this)
         Notifications.ensureChannels(this)
         applyTerminalPalette()
+        // OSC 52(远端写剪贴板)按用户设置启用,默认关
+        com.termux.terminal.TerminalEmulator.allowOsc52Clipboard = dev.vibeterm.data.Prefs.osc52Clipboard(this)
         SessionManager.restoreWindows() // 冷启动自动恢复上次打开的窗口
         if (Build.VERSION.SDK_INT >= 33 &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED

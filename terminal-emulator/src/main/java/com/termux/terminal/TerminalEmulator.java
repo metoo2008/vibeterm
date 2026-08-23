@@ -31,6 +31,12 @@ public final class TerminalEmulator {
     /** Log unknown or unimplemented escape sequences received from the shell process. */
     private static final boolean LOG_ESCAPE_SEQUENCES = false;
 
+    /**
+     * VibeTerm: master switch for OSC 52 (remote-driven clipboard writes). Default off for security;
+     * the app flips it from the user setting. See the OSC 52 handler in processOSC().
+     */
+    public static volatile boolean allowOsc52Clipboard = false;
+
     public static final int MOUSE_LEFT_BUTTON = 0;
 
     /** Mouse moving while having left mouse button pressed. */
@@ -2105,6 +2111,10 @@ public final class TerminalEmulator {
                 }
                 break;
             case 52: // Manipulate Selection Data. Skip the optional first selection parameter(s).
+                // VibeTerm: OSC 52 lets the *remote* write our clipboard. A compromised server or a
+                // malicious log file could hijack the clipboard to trick the user into pasting harmful
+                // commands elsewhere, so this is opt-in (default off) via the app setting.
+                if (!allowOsc52Clipboard) break;
                 int startIndex = textParameter.indexOf(";") + 1;
                 try {
                     String clipboardText = new String(Base64.decode(textParameter.substring(startIndex), 0), StandardCharsets.UTF_8);

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 显式排除凭据与配置,兜住 Android 12+ 设备迁移(可能忽略 allowBackup) -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="secrets.xml" />
+        <exclude domain="sharedpref" path="ui.xml" />
+        <exclude domain="file" path="hosts.json" />
+        <exclude domain="file" path="known_hosts.json" />
+        <exclude domain="file" path="last_windows.json" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="secrets.xml" />
+        <exclude domain="sharedpref" path="ui.xml" />
+        <exclude domain="file" path="hosts.json" />
+        <exclude domain="file" path="known_hosts.json" />
+        <exclude domain="file" path="last_windows.json" />
+    </device-transfer>
+</data-extraction-rules>

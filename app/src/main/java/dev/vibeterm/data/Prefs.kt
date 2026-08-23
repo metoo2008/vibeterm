@@ -27,4 +27,17 @@ object Prefs {
     fun setQuickCommands(context: Context, commands: List<String>) {
         prefs(context).edit().putString("quick_cmds", commands.joinToString("\n")).apply()
     }
+
+    /** OSC 52:允许远端程序写入本机剪贴板。默认关(失陷服务器可劫持剪贴板诱导粘贴恶意命令)。 */
+    fun osc52Clipboard(context: Context) = prefs(context).getBoolean("osc52_clipboard", false)
+    fun setOsc52Clipboard(context: Context, value: Boolean) {
+        prefs(context).edit().putBoolean("osc52_clipboard", value).apply()
+    }
+
+    /** 锁屏免解锁批准。默认关:锁屏点通知按钮需先解锁(指纹即可),防止拿到设备的人替 AI 放行。 */
+    fun lockscreenApproveWithoutAuth(context: Context) =
+        prefs(context).getBoolean("lockscreen_noauth", false)
+    fun setLockscreenApproveWithoutAuth(context: Context, value: Boolean) {
+        prefs(context).edit().putBoolean("lockscreen_noauth", value).apply()
+    }
 }

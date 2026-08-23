@@ -22,6 +22,6 @@ object HostStore {
     fun save(context: Context, hosts: List<HostProfile>) {
         val arr = JSONArray()
         hosts.forEach { arr.put(it.toJson()) }
-        File(context.filesDir, FILE_NAME).writeText(arr.toString(2))
+        File(context.filesDir, FILE_NAME).writeTextAtomic(arr.toString(2))
     }
 }

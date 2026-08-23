@@ -14,6 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/Theme.VibeTerm"
         android:allowBackup="false"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:supportsRtl="false">
 
         <activity

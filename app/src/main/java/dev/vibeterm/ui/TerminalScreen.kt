@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -404,6 +405,10 @@ private fun TerminalPane(
             },
         )
 
+        session.hostKeyPrompt?.let { prompt ->
+            HostKeyDialog(prompt)
+        }
+
         when (session.state) {
             SshTerminalSession.State.CONNECTING -> {
                 LinearProgressIndicator(Modifier.fillMaxWidth().align(Alignment.TopCenter))
@@ -457,6 +462,39 @@ private fun TerminalPane(
 private fun tabTitle(session: SshTerminalSession): String {
     val base = session.profile.label.ifBlank { session.profile.host }
     return "$base·${session.windowIndex}"
+}
+
+/** 主机公钥确认:首连或指纹变更时展示 SHA256 指纹,由用户人工核对后决定是否信任。 */
+@Composable
+private fun HostKeyDialog(prompt: SshTerminalSession.HostKeyPrompt) {
+    AlertDialog(
+        onDismissRequest = { prompt.onDecision(false) },
+        title = { Text(if (prompt.changed) "⚠️ 主机指纹已变更" else "确认主机指纹") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (prompt.changed) {
+                    Text(
+                        "${prompt.host}:${prompt.port} 的公钥与上次记录不一致。这可能是服务器重装,也可能是中间人攻击。请务必与服务器管理员核对后再信任。",
+                        color = TermRed,
+                        fontSize = 13.sp,
+                    )
+                    prompt.previousFingerprint?.let {
+                        Text("旧:$it", fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = TermGray)
+                    }
+                    Text("新:${prompt.fingerprint}", fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                } else {
+                    Text(
+                        "首次连接 ${prompt.host}:${prompt.port}。请核对下面的指纹与服务器实际指纹一致后再信任(服务器上运行 ssh-keygen -lf /etc/ssh/ssh_host_*_key.pub 可查看)。",
+                        fontSize = 13.sp,
+                    )
+                    Text("${prompt.algorithm}", fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = TermGray)
+                    Text(prompt.fingerprint, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { prompt.onDecision(true) }) { Text("信任并连接") } },
+        dismissButton = { TextButton(onClick = { prompt.onDecision(false) }) { Text("取消") } },
+    )
 }
 
 /** 胶囊式会话标签:焦点态高亮底色,在屏(分屏另一栏)次亮,其余置灰。 */

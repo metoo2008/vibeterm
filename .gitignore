@@ -13,3 +13,4 @@ CLAUDE.local.md
 *.jks
 keystore.properties
 .DS_Store
+tools/*.class

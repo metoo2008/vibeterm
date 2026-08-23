@@ -41,12 +41,12 @@ VibeTerm 是一个专为「vibe coding」打造的 Android SSH 终端——让�
 
 | 素材 | 规格 | 说明 |
 |---|---|---|
-| 应用图标 | 512×512 PNG(32 位,含 alpha) | 可用项目内自适应图标导出:深底 + 绿色 `❯_` |
-| 特色图片 Feature graphic | 1024×500 PNG/JPG | 商店顶部横幅,必需 |
+| 应用图标 | 512×512 PNG(32 位,含 alpha) | **已生成**:`docs/store-assets/icon-512.png` |
+| 特色图片 Feature graphic | 1024×500 PNG/JPG | **已生成**:`docs/store-assets/feature-1024x500.png` |
 | 手机截图 | 至少 2 张,16:9 或 9:16 | 可用 `docs/screenshots/` 内现成图 |
 | 平板截图（可选) | 7"/10" | 分屏截图很加分 |
 
-> 图标与横幅若需要,我可以基于现有 `❯_` 视觉生成一版 SVG,你导出 PNG 即可。
+> 图标与横幅已用品牌视觉(深底 + 绿色 `❯_` + JetBrains Mono)生成,见 `docs/store-assets/`;生成器为 `tools/StoreAssets.java`,想改文案/配色重新跑即可。
 
 ## 3. 数据安全表(Data safety)—— 本应用全部选「否」
 

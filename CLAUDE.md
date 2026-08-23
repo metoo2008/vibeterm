@@ -5,7 +5,7 @@ Android SSH 客户端,核心卖点:原生中文输入(自研 IME InputConnection
 锁屏批准 AI 代理。设计文档在 `docs/DESIGN.md`,**开发以它为准绳,完成里程碑要更新其中的勾选状态**。
 
 ## 构建
-- JDK 17 + Android SDK(compileSdk 34):`./gradlew :app:assembleDebug`
+- JDK 17 + Android SDK(compileSdk 36):`./gradlew :app:assembleDebug`(AGP 8.11.1 / Gradle 8.13)
 - Maven 仓库阿里云镜像优先、Gradle wrapper 腾讯镜像(照顾中国大陆网络,海外亦可用),见 settings.gradle.kts
 - 机器相关的路径与环境写在 `CLAUDE.local.md`(不入库)
 

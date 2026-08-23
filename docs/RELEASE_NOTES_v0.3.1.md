@@ -1,9 +1,10 @@
-# VibeTerm v0.3.0 — Android 16 / Google Play 就绪 · Security Hardening
+# VibeTerm v0.3.1 — Android 16 / Google Play 就绪 · Security Hardening
 
 ## 本版重点
 
-- **targetSdk / compileSdk 升到 36(Android 16)**,满足 Google Play 自 2026-08-31 起对新应用与更新的 API 36 要求;工具链同步升级(AGP 8.11.1 / Gradle 8.13)。
-- **完整适配 edge-to-edge**:Android 15+ 强制的全面屏(内容延伸到系统栏后)已正确处理——顶栏避开状态栏、底部附加键条避开手势区、软键盘弹出时键条贴合其上方。已在 Android 16 模拟器实测。
+- **targetSdk / compileSdk 升到 36(Android 16)**,满足 Google Play 自 2026-08-31 起对新应用与更新的 API 36 要求;工具链同步升级(AGP 8.11.1 / Gradle 8.13),已在 Android 16 模拟器实测 edge-to-edge 与连接。
+- **剪贴板粘贴加固**:统一有界读取入口——只接收纯文本(URI/Intent 型剪贴板直接拒绝,不经 ContentProvider 在主线程读整段);长度在 `.toString()` 之前检查;**超限整次拒绝并提示,绝不截断**(避免把半条命令/半个引号发到远端)。三处粘贴入口共用同一 helper 并补齐单测。
+- CI 全部 Action 升级到 Node 24 版本并重新固定 commit SHA;库模块 compileSdk 同步 36;文档校准。
 - 以下为累计的安全加固说明。
 
 ---
@@ -54,7 +55,7 @@
 
 **SHA-256 校验**(用于核对下载的 APK 与发布者上传的二进制一致;注:Android APK 默认不逐字节可复现,该值对应本次发布上传的具体文件,不代表可由源码重建出相同哈希):
 ```
-498c46aa8a4b6f5b7582bdda0ffadc3b08462cf60706ac96cd253b6d8eca8b78
+e89e368aefa3b2f85d4905784c4ff6ca7dd4ba29f3c58774f26248acf29634ad
 ```
 
 **服务器建议**:安装 tmux、UTF-8 locale;Claude Code 设置 `preferredNotifChannel: terminal_bell` 可获得精确的任务完成通知。
@@ -70,4 +71,4 @@ SSH 密钥认证(ed25519)、服务器 tmux 会话浏览、mosh 传输、并发�
 
 ---
 
-GPL-3.0 · 完整变更见 `git log v0.2.0..v0.3.0` · 供应链取舍见 SECURITY.md · Issues 与 PR 欢迎
+GPL-3.0 · 完整变更见 `git log v0.2.0..v0.3.1` · 供应链取舍见 SECURITY.md · Issues 与 PR 欢迎

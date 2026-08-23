@@ -2603,10 +2603,20 @@ public final class TerminalEmulator {
      */
     public static final int MAX_PASTE_CHARS = 1024 * 1024; // 1 Mi chars
 
+    /** Returns whether a paste of the given length is within the accepted bound (pure, unit-testable). */
+    public static boolean isPasteWithinLimit(int length) {
+        return length <= MAX_PASTE_CHARS;
+    }
+
     /** If DECSET 2004 is set, prefix paste with "\033[200~" and suffix with "\033[201~". */
     public void paste(String text) {
         if (text == null) return;
-        if (text.length() > MAX_PASTE_CHARS) text = text.substring(0, MAX_PASTE_CHARS);
+        // VibeTerm: reject an over-limit paste ENTIRELY rather than truncating. For an SSH terminal,
+        // silently sending "half a command" (or a split quote/heredoc/surrogate pair) is more
+        // dangerous than refusing. Nothing is sent — not even the bracketed-paste start/end markers.
+        // The app-side clipboard reader (dev.vibeterm.ui.Clipboard) already surfaces a message; this
+        // is the last-line chokepoint covering the vendored middle-click / text-selection paths too.
+        if (!isPasteWithinLimit(text.length())) return;
         // First: Always remove escape key and C1 control characters [0x80,0x9F]:
         text = text.replaceAll("(\u001B|[\u0080-\u009F])", "");
         // Second: Replace all newlines (\n) or CRLF (\r\n) with carriage returns (\r).

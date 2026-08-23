@@ -21,6 +21,7 @@ import dev.vibeterm.data.SecureStore
 import dev.vibeterm.data.writeTextAtomic
 import dev.vibeterm.notify.Notifications
 import dev.vibeterm.service.SshForegroundService
+import dev.vibeterm.ui.Clipboard
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -200,9 +201,9 @@ object GlobalSessionClient : TerminalSessionClient {
     }
 
     override fun onPasteTextFromClipboard(session: TerminalSession?) {
-        val cm = SessionManager.appContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val text = cm.primaryClip?.getItemAt(0)?.coerceToText(SessionManager.appContext)?.toString()
-        if (!text.isNullOrEmpty()) session?.emulator?.paste(text)
+        // 有界读取:非纯文本(URI/Intent)或超限(>100 万字符)时不粘贴,避免主线程巨型分配与残缺命令
+        val r = Clipboard.read(SessionManager.appContext)
+        if (r is Clipboard.Result.Text) session?.emulator?.paste(r.text)
     }
 
     override fun onBell(session: TerminalSession) {

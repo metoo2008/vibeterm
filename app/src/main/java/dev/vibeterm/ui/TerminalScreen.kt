@@ -168,11 +168,7 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
             BarKey.PGUP -> sendKeyCode(session, KeyEvent.KEYCODE_PAGE_UP)
             BarKey.PGDN -> sendKeyCode(session, KeyEvent.KEYCODE_PAGE_DOWN)
             BarKey.CMDS -> showCommands = true
-            BarKey.PASTE -> {
-                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val text = cm.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()
-                if (!text.isNullOrEmpty()) session.emulator?.paste(text)
-            }
+            BarKey.PASTE -> pasteFromClipboard(context, session)
             BarKey.KEYBOARD -> client.view?.let { showSoftKeyboard(it) }
         }
     }
@@ -465,6 +461,18 @@ private fun TerminalPane(
         onDispose {
             if (session.attachedView === viewClient.view) session.attachedView = null
         }
+    }
+}
+
+/** 有界读取剪贴板并粘贴到会话;非纯文本/超限时给出提示,不发送残缺内容。 */
+private fun pasteFromClipboard(context: Context, session: SshTerminalSession) {
+    when (val r = Clipboard.read(context)) {
+        is Clipboard.Result.Text -> session.emulator?.paste(r.text)
+        Clipboard.Result.Empty -> {}
+        Clipboard.Result.Unsupported ->
+            Toast.makeText(context, "剪贴板不是纯文本,已忽略", Toast.LENGTH_SHORT).show()
+        Clipboard.Result.TooLarge ->
+            Toast.makeText(context, "剪贴板内容过大(超过 100 万字符),已拒绝粘贴", Toast.LENGTH_SHORT).show()
     }
 }
 

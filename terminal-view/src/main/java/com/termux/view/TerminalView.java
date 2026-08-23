@@ -660,8 +660,14 @@ public final class TerminalView extends View {
                 if (clipData != null) {
                     ClipData.Item clipItem = clipData.getItemAt(0);
                     if (clipItem != null) {
-                        CharSequence text = clipItem.coerceToText(getContext());
-                        if (!TextUtils.isEmpty(text)) mEmulator.paste(text.toString());
+                        // VibeTerm: only accept plain text (getText), NOT coerceToText() which would
+                        // read a URI clip through its ContentProvider and copy the whole stream into a
+                        // String on the main thread. Length is checked before toString(); paste()
+                        // itself rejects an over-limit paste entirely.
+                        CharSequence text = clipItem.getText();
+                        if (!TextUtils.isEmpty(text) && TerminalEmulator.isPasteWithinLimit(text.length())) {
+                            mEmulator.paste(text.toString());
+                        }
                     }
                 }
             } else if (mEmulator.isMouseTrackingActive()) { // BUTTON_PRIMARY.

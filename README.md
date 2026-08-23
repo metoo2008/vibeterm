@@ -49,7 +49,7 @@ GPL-3.0 · minSdk 26 (Android 8.0+) · Kotlin + Jetpack Compose
 ## 构建
 
 ```bash
-# 需要 JDK 17;Android SDK(compileSdk 34)
+# 需要 JDK 17;Android SDK(compileSdk 36,Android 16)
 ./gradlew :app:assembleDebug
 # APK 产物:app/build/outputs/apk/debug/app-debug.apk
 ```

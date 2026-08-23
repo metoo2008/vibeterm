@@ -8,3 +8,7 @@ local.properties
 captures/
 .externalNativeBuild/
 .cxx/
+CLAUDE.local.md
+*.keystore
+*.jks
+.DS_Store

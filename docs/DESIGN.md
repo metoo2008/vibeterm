@@ -199,8 +199,8 @@ ssh-terminal/
 
 ## 7. 构建与工程
 
-- 工具链(全部便携安装于 `D:\dev-tools`,国内源):JDK 17(aka.ms)、Android SDK cmdline-tools + platform 34 + build-tools 34(dl.google.com 直连可用)、MinGit(npmmirror)。
-- Gradle wrapper → 腾讯镜像;Maven 仓库 → 阿里云镜像优先,官方兜底(见 `settings.gradle.kts`)。
+- 工具链:JDK 17 + Android SDK(cmdline-tools + platform 34 + build-tools 34)。
+- 照顾中国大陆网络:Gradle wrapper → 腾讯镜像;Maven 仓库 → 阿里云镜像优先,官方兜底(见 `settings.gradle.kts`);镜像内容与官方一致,海外网络亦可用。
 - 构建验证:`gradlew :app:assembleDebug`;真机验证经 `adb install`。
 
 ## 8. 风险与备选

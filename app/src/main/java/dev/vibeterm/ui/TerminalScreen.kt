@@ -25,7 +25,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -177,7 +179,14 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
 
     val left = leftSession ?: return
 
-    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    // edge-to-edge:系统栏(状态栏/导航栏)内边距 + 输入法内边距,避免顶栏/键条被系统栏遮挡
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .systemBarsPadding()
+            .imePadding()
+    ) {
         // 顶栏:主机列表入口 + 会话标签 + 分屏 + 新窗口
         Row(
             verticalAlignment = Alignment.CenterVertically,

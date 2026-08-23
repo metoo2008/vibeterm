@@ -11,4 +11,5 @@ captures/
 CLAUDE.local.md
 *.keystore
 *.jks
+keystore.properties
 .DS_Store

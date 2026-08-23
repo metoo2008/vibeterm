@@ -376,7 +376,7 @@ private fun HostEditDialog(
                     val profile = (initial ?: HostProfile()).copy(
                         label = label.trim(),
                         host = host.trim(),
-                        port = port.toIntOrNull() ?: 22,
+                        port = (port.toIntOrNull() ?: 22).coerceIn(1, 65535),
                         username = username.trim(),
                         useTmux = useTmux,
                     )
@@ -405,6 +405,7 @@ private fun PasswordDialog(
                 OutlinedTextField(
                     password, { password = it }, label = { Text("密码") }, singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = save, onCheckedChange = { save = it })

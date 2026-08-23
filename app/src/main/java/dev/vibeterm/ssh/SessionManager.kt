@@ -18,6 +18,7 @@ import com.termux.terminal.TerminalSessionClient
 import dev.vibeterm.data.HostProfile
 import dev.vibeterm.data.HostStore
 import dev.vibeterm.data.SecureStore
+import dev.vibeterm.data.writeTextAtomic
 import dev.vibeterm.notify.Notifications
 import dev.vibeterm.service.SshForegroundService
 import org.json.JSONArray
@@ -145,8 +146,9 @@ object SessionManager {
             sessions.forEach { s ->
                 arr.put(JSONObject().put("hostId", s.profile.id).put("index", s.windowIndex))
             }
-            windowsFile().writeText(arr.toString())
-        } catch (_: Exception) {
+            windowsFile().writeTextAtomic(arr.toString())
+        } catch (e: Exception) {
+            Log.w("VibeTerm", "persistWindows failed", e)
         }
     }
 

@@ -15,6 +15,10 @@ data class HostProfile(
     val displayName: String
         get() = label.ifBlank { "$username@$host" }
 
+    /** 端口必须在合法范围;非法值回落 22,避免把无效端口写进配置或发起连接。 */
+    val safePort: Int
+        get() = if (port in 1..65535) port else 22
+
     fun toJson(): JSONObject = JSONObject()
         .put("id", id)
         .put("label", label)

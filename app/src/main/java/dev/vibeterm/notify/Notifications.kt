@@ -92,23 +92,29 @@ object Notifications {
         val icon = Icon.createWithResource(context, R.drawable.ic_notification)
         // 默认要求先解锁(指纹即可)才发送输入,防止拿到设备的人替 AI 放行;可在设置里关闭。
         val requireAuth = !Prefs.lockscreenApproveWithoutAuth(context)
-        val notification = Notification.Builder(context, CHANNEL_ACTIVITY)
+        // setAuthenticationRequired 仅 API 31+ 有效。API 26–30 无法在锁屏拦截动作,
+        // 若要求认证却又加了直连按键的动作,拿到设备的人可绕过 —— 此时干脆不加动作,
+        // 只保留点击进入 App(进 App 前会经系统锁屏),把认证交给 keyguard。
+        val canEnforceAuth = Build.VERSION.SDK_INT >= 31
+        val addActions = !requireAuth || canEnforceAuth
+
+        val builder = Notification.Builder(context, CHANNEL_ACTIVITY)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(text)
             .setContentIntent(contentPending)
             .setAutoCancel(true)
-            // 锁屏遥控:把按键写进会话(默认需解锁认证)
-            .addAction(
+        if (addActions) {
+            builder.addAction(
                 notificationAction(icon, "✅ 确认(回车)",
                     sendInputPending(context, session, "\r", notificationId, requestCodeOffset = 1), requireAuth)
             )
-            .addAction(
+            builder.addAction(
                 notificationAction(icon, "✋ 打断(Esc)",
                     sendInputPending(context, session, "\u001b", notificationId, requestCodeOffset = 2), requireAuth)
             )
-            .build()
-        context.getSystemService(NotificationManager::class.java).notify(notificationId, notification)
+        }
+        context.getSystemService(NotificationManager::class.java).notify(notificationId, builder.build())
     }
 
     private fun notificationAction(

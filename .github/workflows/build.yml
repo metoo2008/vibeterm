@@ -12,20 +12,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      # 所有 action 固定到 commit SHA,防可移动标签被篡改(注释标注对应版本便于升级)
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
           java-version: "17"
-      # SHA 固定,避免可移动标签被篡改(setup-android v3.2.2)
-      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
       - name: Unit tests
         run: ./gradlew :app:testDebugUnitTest --no-daemon
       - name: Lint
         run: ./gradlew :app:lintDebug --no-daemon
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug --no-daemon
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk

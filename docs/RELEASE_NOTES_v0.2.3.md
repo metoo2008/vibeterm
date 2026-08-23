@@ -41,7 +41,7 @@
 
 **SHA-256 校验**(安全版建议核对):
 ```
-482fbb53318771f922b6f931b32d196a46574c95fa2f9faadff92dc8bd04f407
+973303cd049eaa03dd989f1de38166575c8c07a2f6c177f4a53d2b701d2e9034
 ```
 
 **服务器建议**:安装 tmux、UTF-8 locale;Claude Code 设置 `preferredNotifChannel: terminal_bell` 可获得精确的任务完成通知。

@@ -1,15 +1,15 @@
-# VibeTerm v0.2.3 — 安全修复版 / Security Hardening Release
+# VibeTerm v0.2.4 — 安全修复版 / Security Hardening Release
 
 **为 vibe coding 而生的 Android SSH 终端**:原生中文输入、tmux 断线保活、多窗口/平板分屏、锁屏批准 AI 代理。
 
 *An Android SSH terminal built for vibe coding — native CJK input, tmux-backed session persistence, split-screen, and lock-screen approval for AI coding agents.*
 
-> 本版本经过**四轮独立安全审计**,已修复截至发布时所有已知的高/中风险审计发现;第四轮未再发现高风险问题。安全是持续过程,欢迎通过 Issue 反馈新发现。
-> Incorporates fixes from **four rounds of independent security audit**; all known high/medium findings to date are resolved and the fourth round surfaced no high-risk issues. Security is an ongoing process — please report new findings via Issues.
+> 本版本经过**五轮独立安全审计**:所有已知**高风险**问题均已修复,近两轮未再发现高风险;中风险问题已基本修复,剩余供应链依赖校验一项作为已记录的发布后跟进项(见 [SECURITY.md](../SECURITY.md))。安全是持续过程,欢迎通过 Issue 反馈。
+> Hardened across **five rounds of independent security audit**: all known high-risk issues are fixed (none found in the last two rounds); medium-risk issues are largely resolved, with full dependency-verification tracked as a documented post-release follow-up (see SECURITY.md).
 
 ---
 
-## 🔒 安全加固亮点(v0.2.0 → v0.2.3)
+## 🔒 安全加固亮点(v0.2.0 → v0.2.4)
 
 - **主机公钥确认**:首次连接与密钥变更时展示 SHA256 指纹,由你人工核对确认后才发送密码——不再静默信任,杜绝首连中间人窃密码。
 - **修复 Terrapin 漏洞**:SSH 库升级到 2.2.22,修复 CVE-2023-48795。
@@ -17,6 +17,7 @@
 - **指纹保存失败即拒连**:点「信任并连接」但公钥未能落盘时,连接被取消并明确提示,不再出现「看似已信任、实则未固定」的静默不一致。
 - **供应链**:SSH 库跟进上游维护版本 2.2.48;Gradle wrapper 固定 SHA-256、GitHub Actions 全部固定 commit SHA、依赖全部锁定精确版本(无动态版本区间)、仓库仅走 HTTPS。(完整 `verification-metadata.xml` 依赖校验因「镜像生成 / CI 异环境校验」的跨环境字节差异导致构建脆弱,暂缓,待在 CI 环境内生成维护后再启用。)
 - **并发健壮性(第四轮)**:主机指纹弹窗加世代标记与容量 1 决策队列,消除切代竞态与「决定先于等待被丢弃」;状态提示改后台线程写入,杜绝主线程写满输出队列的死锁;前台服务空 Intent 重启时自停,避免「0 会话常驻通知耗电」。
+- **内存健壮性(第五轮)**:状态提示线程改为**有界队列 + 满时丢弃**并对「缓冲已满」提示限频;SSH 输入队列改为**按总字节数限流(约 4 MiB)**而非仅限条数——远端停止读取时连续粘贴大文本不再堆积 OOM。
 - **锁屏批准需认证**:通知的「确认/打断」按钮默认要求先解锁(指纹即可);低于 Android 12 无法强制认证的设备上则不提供直连按键动作。
 - **OSC 52 默认关闭**:失陷服务器无法再劫持你的剪贴板,需要时可在设置中开启。
 - **编辑主机清旧密码**:改动地址/端口/用户名后强制重新输入密码,避免把旧凭据发往新服务器。
@@ -41,7 +42,7 @@
 
 **SHA-256 校验**(安全版建议核对):
 ```
-973303cd049eaa03dd989f1de38166575c8c07a2f6c177f4a53d2b701d2e9034
+52af776dd83e9df26fc5731aeef630248044d74a954f9c50c628602cb652b73f
 ```
 
 **服务器建议**:安装 tmux、UTF-8 locale;Claude Code 设置 `preferredNotifChannel: terminal_bell` 可获得精确的任务完成通知。
@@ -57,4 +58,4 @@ SSH 密钥认证(ed25519)、服务器 tmux 会话浏览、mosh 传输、并发�
 
 ---
 
-GPL-3.0 · 完整变更见 `git log v0.2.0..v0.2.3` · Issues 与 PR 欢迎
+GPL-3.0 · 完整变更见 `git log v0.2.0..v0.2.4` · 供应链取舍见 SECURITY.md · Issues 与 PR 欢迎

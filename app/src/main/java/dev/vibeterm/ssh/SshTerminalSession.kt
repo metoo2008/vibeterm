@@ -18,6 +18,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.Executors
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
@@ -61,6 +62,8 @@ class SshTerminalSession(
     ) {
         val disconnected = AtomicBoolean(false)
         @Volatile var connectedAt = 0L
+        /** 待发送输入的总字节数;按字节而非条数限流,防止大文本粘贴堆积 OOM。 */
+        val pendingBytes = java.util.concurrent.atomic.AtomicLong(0)
     }
 
     var state by mutableStateOf(State.CONNECTING)
@@ -90,8 +93,19 @@ class SshTerminalSession(
      * 本地状态提示专用线程:写入终端的输出队列在满时会阻塞等待主线程消费。若从主线程
      * (如网络切换回调、onTransportStart)直接写,就会「主线程等主线程」死锁。全部经此后台
      * 线程串行写入,保证既不阻塞调用方、又保持提示顺序。
+     *
+     * 队列**有界** + 满时丢弃新任务(DiscardPolicy):输出阻塞时状态任务不会无限堆积 OOM;
+     * 状态提示是非关键信息,丢弃可接受。
      */
-    private val statusExecutor = Executors.newSingleThreadExecutor { r -> Thread(r, "ssh-status").apply { isDaemon = true } }
+    private val statusExecutor = ThreadPoolExecutor(
+        1, 1, 0L, TimeUnit.MILLISECONDS,
+        ArrayBlockingQueue(STATUS_QUEUE_CAP),
+        { r -> Thread(r, "ssh-status").apply { isDaemon = true } },
+        ThreadPoolExecutor.DiscardPolicy(),
+    )
+
+    /** “输入缓冲已满”提示限频,避免连续按键/粘贴刷屏。 */
+    @Volatile private var lastFullMsgAt = 0L
 
     /** 保护 [generation] 与 [transport] 的原子读改写:切代与发布传输必须是一个不可分割的操作。 */
     private val lock = Any()
@@ -127,11 +141,21 @@ class SshTerminalSession(
         if (state != State.CONNECTED) return
         val t = transport ?: return
         val chunk = data.copyOfRange(offset, offset + count)
-        // 有界队列。满则拒绝「新」输入(绝不动已入队字节,避免把已排队命令改坏),并提示。
-        // 队列满通常意味着远端已不再读取(连接卡死),读线程会随后触发重连。
-        if (!t.queue.offer(chunk)) {
-            postStatus("\r\n[VibeTerm] 输入缓冲已满,连接可能已卡住,输入被丢弃。")
+        // 按「总字节数」限流(不能只按条数:一次粘贴就是一个任意大的数组)。超限即拒绝新输入,
+        // 绝不动已入队字节。远端停止读取时,读线程随后会触发重连。
+        if (t.pendingBytes.get() + chunk.size > MAX_PENDING_INPUT_BYTES || !t.queue.offer(chunk)) {
+            notifyInputBufferFull()
+            return
         }
+        t.pendingBytes.addAndGet(chunk.size.toLong())
+    }
+
+    /** 限频提示输入缓冲已满,避免连续按键/粘贴刷屏。 */
+    private fun notifyInputBufferFull() {
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastFullMsgAt < FULL_MSG_MIN_INTERVAL_MS) return
+        lastFullMsgAt = now
+        postStatus("\r\n[VibeTerm] 输入缓冲已满,连接可能已卡住,输入被丢弃。")
     }
 
     override fun onTransportResize(columns: Int, rows: Int, cellWidthPixels: Int, cellHeightPixels: Int) {
@@ -345,6 +369,7 @@ class SshTerminalSession(
             try {
                 while (t.gen == generation) {
                     val chunk = t.queue.poll(500, TimeUnit.MILLISECONDS) ?: continue
+                    t.pendingBytes.addAndGet(-chunk.size.toLong()) // 出队即扣减,与入队计数对齐
                     // poll 可能睡过了重连边界,写入前再次校验,避免把新按键写向旧连接
                     if (t.gen != generation) break
                     t.stdin.write(chunk)
@@ -462,6 +487,10 @@ class SshTerminalSession(
         private const val KEX_TIMEOUT_MS = (HOST_KEY_PROMPT_TIMEOUT_MS + 30_000L).toInt()
         private const val KEEPALIVE_INTERVAL_MS = 15_000L
         private const val WRITE_QUEUE_CAPACITY = 4096
+        /** 待发送输入总字节上限(约 4 MiB):按字节限流,防大文本粘贴堆积 OOM。 */
+        private const val MAX_PENDING_INPUT_BYTES = 4L * 1024 * 1024
+        private const val STATUS_QUEUE_CAP = 64
+        private const val FULL_MSG_MIN_INTERVAL_MS = 2_000L
         private const val BASE_RECONNECT_MS = 1_000L
         private const val MAX_RECONNECT_MS = 30_000L
         private const val STABLE_MS = 20_000L

@@ -45,13 +45,13 @@ VibeTerm 解决的不是"中文输入",而是 **Android 终端的 IME/InputConne
 
 **输入 vs. 显示(如实说明)**:VibeTerm 负责把文本**正确输入**到 SSH 通道。**显示**遵循通用终端的限制——CJK 宽字符、组合附加符号已正确处理;但**从右到左(阿拉伯语/希伯来语)与阿拉伯连写、复杂印度文字连字**在几乎所有终端模拟器里都按单元格从左到右简化渲染,VibeTerm 亦然。也就是说:这些文字**能正确输入、字节能到达服务器**,但终端里的显示可能是简化/LTR 形式。
 
-> 已在真机验证:中文(百度输入法)全链路。其余语言由同一套语言无关的 IME 实现覆盖,欢迎反馈各输入法的实测情况。
+> 实测:上方「多语言输入」截图为中/日/韩/印地/阿拉伯五种文字经 IME 的 `commitText` 路径输入并由 SSH 回显(与 Gboard/百度等真实输入法提交文本走的是同一个 Android API);中文的候选组合另在真机(百度输入法)验证过全链路。欢迎反馈更多输入法的实测情况。
 
 ## 截图
 
-| 中文输入(百度输入法) | 锁屏批准 |
+| 多语言输入(中/日/韩/印地/阿拉伯) | 锁屏批准 |
 |---|---|
-| ![中文输入](docs/screenshots/chinese-input.png) | ![锁屏批准](docs/screenshots/lockscreen-approve.png) |
+| ![多语言输入](docs/screenshots/language-input.png) | ![锁屏批准](docs/screenshots/lockscreen-approve.png) |
 
 | 终端 | 平板分屏 |
 |---|---|

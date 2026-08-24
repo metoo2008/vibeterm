@@ -25,7 +25,7 @@ Full Android IME / Unicode input (Chinese, Japanese, Korean, Indic, Arabic and m
 
 ## 📥 Install
 
-Download `app-release.apk` below, allow "install unknown apps", and install. Requires Android 8.0 (API 26)+.
+Download `vibeterm-0.4.0-release.apk` below, allow "install unknown apps", and install. Requires Android 8.0 (API 26)+.
 
 **SHA-256** (verify your download matches this page's binary; the APK is not byte-reproducible, so this value corresponds to the uploaded file):
 ```

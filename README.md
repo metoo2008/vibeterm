@@ -47,6 +47,8 @@ VibeTerm 解决的不是"中文输入",而是 **Android 终端的 IME/InputConne
 
 > 实测:上方「多语言输入」截图为中/日/韩/印地/阿拉伯五种文字经 IME 的 `commitText` 路径输入并由 SSH 回显(与 Gboard/百度等真实输入法提交文本走的是同一个 Android API);中文的候选组合另在真机(百度输入法)验证过全链路。欢迎反馈更多输入法的实测情况。
 
+常见问题(为什么安卓 SSH 终端打不了中文/日文/韩文等)见 [docs/FAQ.md](docs/FAQ.md) · FAQ on why Android SSH terminals can't type CJK/Unicode.
+
 ## 截图
 
 | 多语言输入(中/日/韩/印地/阿拉伯) | 锁屏批准 |

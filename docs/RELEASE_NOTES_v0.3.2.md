@@ -25,7 +25,7 @@
 
 **SHA-256**(核对下载的 APK 与本页二进制一致;APK 默认不逐字节可复现,该值对应本次上传的文件):
 ```
-30be799a3643e1649f3640d63897bcbb5fcc53765d11f36edce2e390e4772976
+e5c1f3c4f996d5deb5012185401de1972e42707e3caa0890980ca308c95dcfcb
 ```
 
 **服务器建议**:安装 tmux(用于断线保活)、UTF-8 locale;Claude Code 设 `preferredNotifChannel: terminal_bell` 可获得精确的完成通知。

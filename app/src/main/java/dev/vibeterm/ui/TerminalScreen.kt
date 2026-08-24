@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,6 +71,7 @@ import com.termux.terminal.KeyHandler
 import com.termux.terminal.TerminalSession
 import com.termux.view.TerminalView
 import com.termux.view.TerminalViewClient
+import dev.vibeterm.R
 import dev.vibeterm.data.Prefs
 import dev.vibeterm.ssh.SessionManager
 import dev.vibeterm.ssh.SshTerminalSession
@@ -194,7 +196,7 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
                 onClick = onShowHosts,
                 modifier = Modifier.focusProperties { canFocus = false },
             ) {
-                Icon(Icons.Filled.Menu, contentDescription = "主机列表")
+                Icon(Icons.Filled.Menu, contentDescription = stringResource(R.string.cd_host_list))
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -220,7 +222,7 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
                     if (!split) {
                         val other = sessions.firstOrNull { it != left } ?: SessionManager.openSibling(left)
                         if (other == null) {
-                            Toast.makeText(context, "没有可用的第二个会话(缺少该主机密码)", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.toast_no_second_session), Toast.LENGTH_SHORT).show()
                         } else {
                             rightSession = other
                             split = true
@@ -233,17 +235,17 @@ fun TerminalScreen(onShowHosts: () -> Unit) {
                         focusedPane = 0
                         SessionManager.selected = leftSession
                     }
-                }) { Text(if (split) "并屏" else "分屏") }
+                }) { Text(stringResource(if (split) R.string.action_unsplit else R.string.action_split)) }
             }
             IconButton(
                 modifier = Modifier.focusProperties { canFocus = false },
                 onClick = {
                     if (SessionManager.openSibling(focusedSession() ?: left) == null) {
-                        Toast.makeText(context, "内存中没有该主机的密码,请从主机列表打开新窗口", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.toast_no_cached_password), Toast.LENGTH_SHORT).show()
                     }
                 },
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "新窗口")
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.cd_new_window))
             }
         }
 
@@ -304,7 +306,7 @@ private fun QuickCommandsDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("快捷命令") },
+        title = { Text(stringResource(R.string.quick_commands_title)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 commands.forEach { command ->
@@ -324,7 +326,7 @@ private fun QuickCommandsDialog(
                         )
                         Icon(
                             Icons.Filled.Close,
-                            contentDescription = "删除",
+                            contentDescription = stringResource(R.string.cd_delete),
                             modifier = Modifier.size(16.dp).clickable {
                                 commands.remove(command)
                                 persist()
@@ -339,7 +341,7 @@ private fun QuickCommandsDialog(
                         newCommand,
                         { newCommand = it },
                         modifier = Modifier.weight(1f),
-                        label = { Text("新命令") },
+                        label = { Text(stringResource(R.string.field_new_command)) },
                         singleLine = true,
                     )
                     TextButton(
@@ -349,11 +351,11 @@ private fun QuickCommandsDialog(
                             persist()
                             newCommand = ""
                         },
-                    ) { Text("添加") }
+                    ) { Text(stringResource(R.string.action_add)) }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) } },
     )
 }
 
@@ -428,11 +430,11 @@ private fun TerminalPane(
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .padding(horizontal = 12.dp, vertical = 4.dp),
                 ) {
-                    Text("连接已断开", color = TermRed, fontSize = 13.sp)
+                    Text(stringResource(R.string.state_disconnected), color = TermRed, fontSize = 13.sp)
                     TextButton(
                         onClick = { session.reconnect() },
                         modifier = Modifier.focusProperties { canFocus = false },
-                    ) { Text("立即重连") }
+                    ) { Text(stringResource(R.string.action_reconnect_now)) }
                 }
             }
             SshTerminalSession.State.CLOSED -> {
@@ -446,11 +448,11 @@ private fun TerminalPane(
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .padding(horizontal = 12.dp, vertical = 4.dp),
                 ) {
-                    Text("会话已结束", color = TermGray, fontSize = 13.sp)
+                    Text(stringResource(R.string.state_ended), color = TermGray, fontSize = 13.sp)
                     TextButton(
                         onClick = { SessionManager.close(session) },
                         modifier = Modifier.focusProperties { canFocus = false },
-                    ) { Text("关闭窗口") }
+                    ) { Text(stringResource(R.string.close_window)) }
                 }
             }
             else -> {}
@@ -470,9 +472,9 @@ private fun pasteFromClipboard(context: Context, session: SshTerminalSession) {
         is Clipboard.Result.Text -> session.emulator?.paste(r.text)
         Clipboard.Result.Empty -> {}
         Clipboard.Result.Unsupported ->
-            Toast.makeText(context, "剪贴板不是纯文本,已忽略", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.toast_clip_not_text), Toast.LENGTH_SHORT).show()
         Clipboard.Result.TooLarge ->
-            Toast.makeText(context, "剪贴板内容过大(超过 100 万字符),已拒绝粘贴", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.toast_clip_too_large), Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -486,31 +488,31 @@ private fun tabTitle(session: SshTerminalSession): String {
 private fun HostKeyDialog(prompt: SshTerminalSession.HostKeyPrompt) {
     AlertDialog(
         onDismissRequest = { prompt.onDecision(false) },
-        title = { Text(if (prompt.changed) "⚠️ 主机指纹已变更" else "确认主机指纹") },
+        title = { Text(stringResource(if (prompt.changed) R.string.hostkey_changed_title else R.string.hostkey_confirm_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (prompt.changed) {
                     Text(
-                        "${prompt.host}:${prompt.port} 的公钥与上次记录不一致。这可能是服务器重装,也可能是中间人攻击。请务必与服务器管理员核对后再信任。",
+                        stringResource(R.string.hostkey_changed_body, prompt.host, prompt.port),
                         color = TermRed,
                         fontSize = 13.sp,
                     )
                     prompt.previousFingerprint?.let {
-                        Text("旧:$it", fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = TermGray)
+                        Text(stringResource(R.string.hostkey_old, it), fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = TermGray)
                     }
-                    Text("新:${prompt.fingerprint}", fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                    Text(stringResource(R.string.hostkey_new, prompt.fingerprint), fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                 } else {
                     Text(
-                        "首次连接 ${prompt.host}:${prompt.port}。请核对下面的指纹与服务器实际指纹一致后再信任(服务器上运行 ssh-keygen -lf /etc/ssh/ssh_host_*_key.pub 可查看)。",
+                        stringResource(R.string.hostkey_first_body, prompt.host, prompt.port),
                         fontSize = 13.sp,
                     )
-                    Text("${prompt.algorithm}", fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = TermGray)
+                    Text(prompt.algorithm, fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = TermGray)
                     Text(prompt.fingerprint, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { prompt.onDecision(true) }) { Text("信任并连接") } },
-        dismissButton = { TextButton(onClick = { prompt.onDecision(false) }) { Text("取消") } },
+        confirmButton = { TextButton(onClick = { prompt.onDecision(true) }) { Text(stringResource(R.string.action_trust_connect)) } },
+        dismissButton = { TextButton(onClick = { prompt.onDecision(false) }) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 
@@ -550,7 +552,7 @@ private fun SessionChip(
             Spacer(Modifier.width(6.dp))
             Icon(
                 Icons.Filled.Close,
-                contentDescription = "关闭窗口",
+                contentDescription = stringResource(R.string.close_window),
                 modifier = Modifier
                     .size(14.dp)
                     .focusProperties { canFocus = false }

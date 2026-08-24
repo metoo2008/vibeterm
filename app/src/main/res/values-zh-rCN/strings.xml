@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VibeTerm</string>
+
+    <string name="action_done">完成</string>
+    <string name="action_save">保存</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_close">关闭</string>
+    <string name="action_add">添加</string>
+    <string name="action_connect">连接</string>
+
+    <string name="sessions_count">会话 (%1$d)</string>
+    <string name="cd_settings">设置</string>
+    <string name="cd_add_host">添加主机</string>
+    <string name="cd_edit">编辑</string>
+    <string name="cd_delete">删除</string>
+    <string name="hosts_empty_title">还没有主机</string>
+    <string name="hosts_empty_hint">点右下角 + 添加你的开发服务器</string>
+
+    <string name="settings_title">设置</string>
+    <string name="set_bell_title">终端响铃通知</string>
+    <string name="set_bell_desc">Claude Code 等工具响铃时提醒(会话不在屏幕上才提醒)</string>
+    <string name="set_silence_title">静默完成通知</string>
+    <string name="set_silence_desc">持续输出的任务停止输出后提醒「可能已完成」</string>
+    <string name="set_noauth_title">锁屏免解锁批准</string>
+    <string name="set_noauth_desc">关:锁屏点通知的确认/打断需先解锁(指纹即可),更安全</string>
+    <string name="set_osc52_title">允许远端写剪贴板 (OSC 52)</string>
+    <string name="set_osc52_desc">关:失陷服务器无法劫持你的剪贴板。除非明确需要,建议保持关闭</string>
+    <string name="set_tips">字号:在终端上双指缩放调整,自动记忆\n切输入法:Ctrl+空格 或长按键条 ⌨</string>
+    <string name="set_language_title">语言</string>
+    <string name="lang_system">跟随系统</string>
+
+    <string name="add_host_title">添加主机</string>
+    <string name="edit_host_title">编辑主机</string>
+    <string name="field_label">名称(可选)</string>
+    <string name="field_host">主机地址</string>
+    <string name="field_port">端口</string>
+    <string name="field_username">用户名</string>
+    <string name="field_password">密码</string>
+    <string name="field_password_keep">密码(留空则不修改)</string>
+    <string name="field_tmux">tmux 断线保活(推荐)</string>
+
+    <string name="connect_to_title">连接到 %1$s</string>
+    <string name="remember_password">记住密码(Keystore 加密)</string>
+
+    <string name="cd_host_list">主机列表</string>
+    <string name="toast_no_second_session">没有可用的第二个会话(缺少该主机密码)</string>
+    <string name="action_split">分屏</string>
+    <string name="action_unsplit">并屏</string>
+    <string name="toast_no_cached_password">内存中没有该主机的密码,请从主机列表打开新窗口</string>
+    <string name="cd_new_window">新窗口</string>
+    <string name="quick_commands_title">快捷命令</string>
+    <string name="field_new_command">新命令</string>
+    <string name="toast_clip_not_text">剪贴板不是纯文本,已忽略</string>
+    <string name="toast_clip_too_large">剪贴板内容过大(超过 100 万字符),已拒绝粘贴</string>
+    <string name="close_window">关闭窗口</string>
+    <string name="state_disconnected">连接已断开</string>
+    <string name="action_reconnect_now">立即重连</string>
+    <string name="state_ended">会话已结束</string>
+
+    <string name="hostkey_changed_title">⚠️ 主机指纹已变更</string>
+    <string name="hostkey_confirm_title">确认主机指纹</string>
+    <string name="hostkey_changed_body">%1$s:%2$d 的公钥与上次记录不一致。这可能是服务器重装,也可能是中间人攻击。请务必与服务器管理员核对后再信任。</string>
+    <string name="hostkey_old">旧:%1$s</string>
+    <string name="hostkey_new">新:%1$s</string>
+    <string name="hostkey_first_body">首次连接 %1$s:%2$d。请核对下面的指纹与服务器实际指纹一致后再信任(服务器上运行 ssh-keygen -lf /etc/ssh/ssh_host_*_key.pub 可查看)。</string>
+    <string name="action_trust_connect">信任并连接</string>
+
+    <string name="key_paste">粘贴</string>
+
+    <string name="chan_sessions">SSH 会话保活</string>
+    <string name="chan_activity">任务提醒</string>
+    <string name="notif_bell_title">终端响铃</string>
+    <string name="notif_bell_text">%1$s 需要你的注意</string>
+    <string name="notif_confirm_title">可能在等你确认</string>
+    <string name="notif_confirm_text">%1$s 停在确认提示,可直接在通知上回复</string>
+    <string name="notif_done_title">任务可能已完成</string>
+    <string name="notif_done_text">%1$s 已停止输出</string>
+    <string name="notif_action_confirm">✅ 确认(回车)</string>
+    <string name="notif_action_interrupt">✋ 打断(Esc)</string>
+
+    <string name="fg_sessions_running">%1$d 个 SSH 会话运行中</string>
+
+    <string name="st_input_buffer_full">输入缓冲已满,连接可能已卡住,输入被丢弃。</string>
+    <string name="st_network_switch">网络已切换,正在重连…</string>
+    <string name="st_auth_failed">认证失败:用户名或密码错误</string>
+    <string name="st_hostkey_save_failed">主机指纹保存失败,连接已取消。</string>
+    <string name="st_hostkey_changed">主机指纹已变更,连接被拒绝(谨防中间人攻击)。</string>
+    <string name="st_hostkey_unconfirmed">未确认主机指纹,连接已取消。</string>
+    <string name="st_disconnected">连接已断开</string>
+    <string name="st_connect_failed">连接失败:%1$s</string>
+    <string name="st_reconnect_in">%1$d 秒后自动重连…</string>
+</resources>

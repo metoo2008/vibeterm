@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VibeTerm</string>
+
+    <string name="action_done">完了</string>
+    <string name="action_save">保存</string>
+    <string name="action_cancel">キャンセル</string>
+    <string name="action_close">閉じる</string>
+    <string name="action_add">追加</string>
+    <string name="action_connect">接続</string>
+
+    <string name="sessions_count">セッション (%1$d)</string>
+    <string name="cd_settings">設定</string>
+    <string name="cd_add_host">ホストを追加</string>
+    <string name="cd_edit">編集</string>
+    <string name="cd_delete">削除</string>
+    <string name="hosts_empty_title">ホストがありません</string>
+    <string name="hosts_empty_hint">右下の + で開発サーバーを追加</string>
+
+    <string name="settings_title">設定</string>
+    <string name="set_bell_title">端末ベル通知</string>
+    <string name="set_bell_desc">Claude Code などがベルを鳴らしたら通知(セッションが画面にないときのみ)</string>
+    <string name="set_silence_title">静音完了通知</string>
+    <string name="set_silence_desc">出力が続くタスクが止まったら「完了かも」と通知</string>
+    <string name="set_noauth_title">ロック画面で解除せず承認</string>
+    <string name="set_noauth_desc">オフ:ロック画面での承認/中断には先に解除が必要(指紋で可)—より安全</string>
+    <string name="set_osc52_title">リモートのクリップボード書き込みを許可 (OSC 52)</string>
+    <string name="set_osc52_desc">オフ:侵害されたサーバーがクリップボードを乗っ取れません。必要でなければオフのまま</string>
+    <string name="set_tips">文字サイズ:端末をピンチで調整、自動記憶\nIME 切替:Ctrl+スペース または ⌨ キー長押し</string>
+    <string name="set_language_title">言語</string>
+    <string name="lang_system">システムに従う</string>
+
+    <string name="add_host_title">ホストを追加</string>
+    <string name="edit_host_title">ホストを編集</string>
+    <string name="field_label">名前(任意)</string>
+    <string name="field_host">ホスト</string>
+    <string name="field_port">ポート</string>
+    <string name="field_username">ユーザー名</string>
+    <string name="field_password">パスワード</string>
+    <string name="field_password_keep">パスワード(空欄で変更なし)</string>
+    <string name="field_tmux">tmux 切断時キープアライブ(推奨)</string>
+
+    <string name="connect_to_title">%1$s に接続</string>
+    <string name="remember_password">パスワードを保存(Keystore 暗号化)</string>
+
+    <string name="cd_host_list">ホスト一覧</string>
+    <string name="toast_no_second_session">2 つ目のセッションがありません(このホストのパスワードがありません)</string>
+    <string name="action_split">分割</string>
+    <string name="action_unsplit">分割解除</string>
+    <string name="toast_no_cached_password">このホストのパスワードがメモリにありません。ホスト一覧から新しいウィンドウを開いてください</string>
+    <string name="cd_new_window">新しいウィンドウ</string>
+    <string name="quick_commands_title">クイックコマンド</string>
+    <string name="field_new_command">新しいコマンド</string>
+    <string name="toast_clip_not_text">クリップボードがプレーンテキストではありません。無視しました</string>
+    <string name="toast_clip_too_large">クリップボードが大きすぎます(100 万文字超)。貼り付けを拒否しました</string>
+    <string name="close_window">ウィンドウを閉じる</string>
+    <string name="state_disconnected">切断されました</string>
+    <string name="action_reconnect_now">今すぐ再接続</string>
+    <string name="state_ended">セッション終了</string>
+
+    <string name="hostkey_changed_title">⚠️ ホストのフィンガープリントが変更されました</string>
+    <string name="hostkey_confirm_title">ホストのフィンガープリントを確認</string>
+    <string name="hostkey_changed_body">%1$s:%2$d の公開鍵が前回の記録と異なります。サーバーの再インストールか、中間者攻撃の可能性があります。信頼する前に管理者に確認してください。</string>
+    <string name="hostkey_old">旧:%1$s</string>
+    <string name="hostkey_new">新:%1$s</string>
+    <string name="hostkey_first_body">%1$s:%2$d への初回接続です。信頼する前に、下のフィンガープリントがサーバーの実際の値と一致するか確認してください(サーバーで ssh-keygen -lf /etc/ssh/ssh_host_*_key.pub を実行)。</string>
+    <string name="action_trust_connect">信頼して接続</string>
+
+    <string name="key_paste">貼り付け</string>
+
+    <string name="chan_sessions">SSH セッション</string>
+    <string name="chan_activity">タスク通知</string>
+    <string name="notif_bell_title">端末ベル</string>
+    <string name="notif_bell_text">%1$s が確認を求めています</string>
+    <string name="notif_confirm_title">確認待ちかもしれません</string>
+    <string name="notif_confirm_text">%1$s が確認プロンプトで停止中 — 通知から返信できます</string>
+    <string name="notif_done_title">タスク完了かも</string>
+    <string name="notif_done_text">%1$s の出力が止まりました</string>
+    <string name="notif_action_confirm">✅ 確認(Enter)</string>
+    <string name="notif_action_interrupt">✋ 中断(Esc)</string>
+
+    <string name="fg_sessions_running">%1$d 件の SSH セッションが実行中</string>
+
+    <string name="st_input_buffer_full">入力バッファが満杯です。接続が停止している可能性があります。入力を破棄しました。</string>
+    <string name="st_network_switch">ネットワークが変わりました。再接続中…</string>
+    <string name="st_auth_failed">認証失敗:ユーザー名またはパスワードが違います</string>
+    <string name="st_hostkey_save_failed">ホストのフィンガープリントの保存に失敗しました。接続を中止しました。</string>
+    <string name="st_hostkey_changed">ホストのフィンガープリントが変更されました。接続を拒否しました(中間者攻撃に注意)。</string>
+    <string name="st_hostkey_unconfirmed">ホストのフィンガープリントが未確認です。接続を中止しました。</string>
+    <string name="st_disconnected">切断されました</string>
+    <string name="st_connect_failed">接続失敗:%1$s</string>
+    <string name="st_reconnect_in">%1$d 秒後に自動再接続…</string>
+</resources>

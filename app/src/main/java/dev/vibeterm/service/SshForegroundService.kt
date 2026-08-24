@@ -12,6 +12,7 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import dev.vibeterm.MainActivity
 import dev.vibeterm.R
+import dev.vibeterm.data.LocaleManager
 import dev.vibeterm.notify.Notifications
 
 /**
@@ -19,6 +20,11 @@ import dev.vibeterm.notify.Notifications
  * (真正的兜底是服务端 tmux;本服务只是“尽力而为”那一层。)
  */
 class SshForegroundService : Service() {
+
+    // 前台通知文案按用户选择的界面语言本地化
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(LocaleManager.wrap(base))
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -57,8 +63,8 @@ class SshForegroundService : Service() {
             )
             return Notification.Builder(context, Notifications.CHANNEL_SESSIONS)
                 .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle("VibeTerm")
-                .setContentText("$count 个 SSH 会话运行中")
+                .setContentTitle(context.getString(R.string.app_name))
+                .setContentText(context.getString(R.string.fg_sessions_running, count))
                 .setOngoing(true)
                 .setContentIntent(pending)
                 .build()

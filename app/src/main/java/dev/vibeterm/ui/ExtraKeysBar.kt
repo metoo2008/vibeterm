@@ -16,9 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.vibeterm.R
 
 /** 附加键条按键。Claude Code 刚需:Esc 打断、Shift+Tab 切模式、方向键、Ctrl 组合。 */
 enum class BarKey(val label: String) {
@@ -37,7 +39,7 @@ enum class BarKey(val label: String) {
     SLASH("/"),
     PIPE("|"),
     CMDS("⌘"),
-    PASTE("粘贴"),
+    PASTE("Paste"), // 显示时用 stringResource(R.string.key_paste) 覆盖,此处仅为占位
     KEYBOARD("⌨"),
 }
 
@@ -58,8 +60,10 @@ fun ExtraKeysBar(
     ) {
         BarKey.entries.forEach { key ->
             val active = (key == BarKey.CTRL && ctrlActive) || (key == BarKey.ALT && altActive)
+            // 只有「粘贴」是文字标签需本地化;其余为符号/ASCII,跨语言一致
+            val label = if (key == BarKey.PASTE) stringResource(R.string.key_paste) else key.label
             KeyButton(
-                label = key.label,
+                label = label,
                 active = active,
                 onClick = { onKey(key) },
                 // ⌨ 长按呼出系统输入法选择器:接实体键盘时导航栏不显示切换图标,这是唯一入口

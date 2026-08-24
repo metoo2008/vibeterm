@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VibeTerm</string>
+
+    <string name="action_done">완료</string>
+    <string name="action_save">저장</string>
+    <string name="action_cancel">취소</string>
+    <string name="action_close">닫기</string>
+    <string name="action_add">추가</string>
+    <string name="action_connect">연결</string>
+
+    <string name="sessions_count">세션 (%1$d)</string>
+    <string name="cd_settings">설정</string>
+    <string name="cd_add_host">호스트 추가</string>
+    <string name="cd_edit">편집</string>
+    <string name="cd_delete">삭제</string>
+    <string name="hosts_empty_title">호스트가 없습니다</string>
+    <string name="hosts_empty_hint">오른쪽 아래 +로 개발 서버를 추가하세요</string>
+
+    <string name="settings_title">설정</string>
+    <string name="set_bell_title">터미널 벨 알림</string>
+    <string name="set_bell_desc">Claude Code 등이 벨을 울리면 알림(세션이 화면에 없을 때만)</string>
+    <string name="set_silence_title">무음 완료 알림</string>
+    <string name="set_silence_desc">출력이 계속되던 작업이 멈추면 \'완료된 듯\' 알림</string>
+    <string name="set_noauth_title">잠금 화면에서 잠금 해제 없이 승인</string>
+    <string name="set_noauth_desc">끄면: 잠금 화면에서 승인/중단하려면 먼저 잠금 해제 필요(지문이면 충분) — 더 안전</string>
+    <string name="set_osc52_title">원격 클립보드 쓰기 허용 (OSC 52)</string>
+    <string name="set_osc52_desc">끄면: 침해된 서버가 클립보드를 탈취할 수 없습니다. 꼭 필요하지 않으면 끄세요</string>
+    <string name="set_tips">글자 크기: 터미널에서 핀치로 조절, 자동 저장\nIME 전환: Ctrl+Space 또는 ⌨ 키 길게 누르기</string>
+    <string name="set_language_title">언어</string>
+    <string name="lang_system">시스템 설정 따름</string>
+
+    <string name="add_host_title">호스트 추가</string>
+    <string name="edit_host_title">호스트 편집</string>
+    <string name="field_label">이름(선택)</string>
+    <string name="field_host">호스트</string>
+    <string name="field_port">포트</string>
+    <string name="field_username">사용자 이름</string>
+    <string name="field_password">비밀번호</string>
+    <string name="field_password_keep">비밀번호(비워두면 유지)</string>
+    <string name="field_tmux">tmux 연결 유지(권장)</string>
+
+    <string name="connect_to_title">%1$s에 연결</string>
+    <string name="remember_password">비밀번호 저장(Keystore 암호화)</string>
+
+    <string name="cd_host_list">호스트 목록</string>
+    <string name="toast_no_second_session">두 번째 세션을 사용할 수 없습니다(이 호스트의 비밀번호 없음)</string>
+    <string name="action_split">분할</string>
+    <string name="action_unsplit">분할 해제</string>
+    <string name="toast_no_cached_password">이 호스트의 비밀번호가 메모리에 없습니다. 호스트 목록에서 새 창을 여세요</string>
+    <string name="cd_new_window">새 창</string>
+    <string name="quick_commands_title">빠른 명령</string>
+    <string name="field_new_command">새 명령</string>
+    <string name="toast_clip_not_text">클립보드가 일반 텍스트가 아니어서 무시했습니다</string>
+    <string name="toast_clip_too_large">클립보드가 너무 큽니다(100만 자 초과). 붙여넣기를 거부했습니다</string>
+    <string name="close_window">창 닫기</string>
+    <string name="state_disconnected">연결 끊김</string>
+    <string name="action_reconnect_now">지금 다시 연결</string>
+    <string name="state_ended">세션 종료</string>
+
+    <string name="hostkey_changed_title">⚠️ 호스트 지문이 변경되었습니다</string>
+    <string name="hostkey_confirm_title">호스트 지문 확인</string>
+    <string name="hostkey_changed_body">%1$s:%2$d의 공개 키가 지난 기록과 다릅니다. 서버 재설치이거나 중간자 공격일 수 있습니다. 신뢰하기 전에 서버 관리자와 확인하세요.</string>
+    <string name="hostkey_old">이전: %1$s</string>
+    <string name="hostkey_new">신규: %1$s</string>
+    <string name="hostkey_first_body">%1$s:%2$d에 처음 연결합니다. 신뢰하기 전에 아래 지문이 서버의 실제 지문과 일치하는지 확인하세요(서버에서 ssh-keygen -lf /etc/ssh/ssh_host_*_key.pub 실행).</string>
+    <string name="action_trust_connect">신뢰하고 연결</string>
+
+    <string name="key_paste">붙여넣기</string>
+
+    <string name="chan_sessions">SSH 세션</string>
+    <string name="chan_activity">작업 알림</string>
+    <string name="notif_bell_title">터미널 벨</string>
+    <string name="notif_bell_text">%1$s에 확인이 필요합니다</string>
+    <string name="notif_confirm_title">확인을 기다리는 중일 수 있습니다</string>
+    <string name="notif_confirm_text">%1$s가 확인 프롬프트에서 멈춤 — 알림에서 바로 응답하세요</string>
+    <string name="notif_done_title">작업이 완료된 듯</string>
+    <string name="notif_done_text">%1$s의 출력이 멈췄습니다</string>
+    <string name="notif_action_confirm">✅ 확인(Enter)</string>
+    <string name="notif_action_interrupt">✋ 중단(Esc)</string>
+
+    <string name="fg_sessions_running">SSH 세션 %1$d개 실행 중</string>
+
+    <string name="st_input_buffer_full">입력 버퍼가 가득 찼습니다. 연결이 멈췄을 수 있습니다. 입력을 버립니다.</string>
+    <string name="st_network_switch">네트워크가 변경되었습니다. 다시 연결 중…</string>
+    <string name="st_auth_failed">인증 실패: 사용자 이름 또는 비밀번호 오류</string>
+    <string name="st_hostkey_save_failed">호스트 지문 저장에 실패했습니다. 연결을 취소했습니다.</string>
+    <string name="st_hostkey_changed">호스트 지문이 변경되었습니다. 연결을 거부했습니다(중간자 공격 주의).</string>
+    <string name="st_hostkey_unconfirmed">호스트 지문이 확인되지 않았습니다. 연결을 취소했습니다.</string>
+    <string name="st_disconnected">연결 끊김</string>
+    <string name="st_connect_failed">연결 실패: %1$s</string>
+    <string name="st_reconnect_in">%1$d초 후 자동 재연결…</string>
+</resources>

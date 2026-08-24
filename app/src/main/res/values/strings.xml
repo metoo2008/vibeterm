@@ -1,4 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">VibeTerm</string>
+
+    <!-- common actions -->
+    <string name="action_done">Done</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_add">Add</string>
+    <string name="action_connect">Connect</string>
+
+    <!-- host list -->
+    <string name="sessions_count">Sessions (%1$d)</string>
+    <string name="cd_settings">Settings</string>
+    <string name="cd_add_host">Add host</string>
+    <string name="cd_edit">Edit</string>
+    <string name="cd_delete">Delete</string>
+    <string name="hosts_empty_title">No hosts yet</string>
+    <string name="hosts_empty_hint">Tap + to add your dev server</string>
+
+    <!-- settings -->
+    <string name="settings_title">Settings</string>
+    <string name="set_bell_title">Terminal bell alerts</string>
+    <string name="set_bell_desc">Alert when tools like Claude Code ring the bell (only when the session is off-screen)</string>
+    <string name="set_silence_title">Idle-finish alerts</string>
+    <string name="set_silence_desc">Alert \'may be done\' when a streaming task stops producing output</string>
+    <string name="set_noauth_title">Approve on lock screen without unlocking</string>
+    <string name="set_noauth_desc">Off: approving/interrupting from the lock screen requires an unlock first (a fingerprint is enough) — safer</string>
+    <string name="set_osc52_title">Allow remote clipboard writes (OSC 52)</string>
+    <string name="set_osc52_desc">Off: a compromised server can\'t hijack your clipboard. Keep it off unless you truly need it</string>
+    <string name="set_tips">Font size: pinch-zoom on the terminal; remembered automatically\nSwitch IME: Ctrl+Space or long-press the ⌨ key</string>
+    <string name="set_language_title">Language</string>
+    <string name="lang_system">Follow system</string>
+
+    <!-- host edit dialog -->
+    <string name="add_host_title">Add host</string>
+    <string name="edit_host_title">Edit host</string>
+    <string name="field_label">Name (optional)</string>
+    <string name="field_host">Host</string>
+    <string name="field_port">Port</string>
+    <string name="field_username">Username</string>
+    <string name="field_password">Password</string>
+    <string name="field_password_keep">Password (leave blank to keep)</string>
+    <string name="field_tmux">tmux keep-alive (recommended)</string>
+
+    <!-- password dialog -->
+    <string name="connect_to_title">Connect to %1$s</string>
+    <string name="remember_password">Remember password (Keystore-encrypted)</string>
+
+    <!-- terminal screen -->
+    <string name="cd_host_list">Host list</string>
+    <string name="toast_no_second_session">No second session available (missing this host\'s password)</string>
+    <string name="action_split">Split</string>
+    <string name="action_unsplit">Unsplit</string>
+    <string name="toast_no_cached_password">No cached password for this host — open a new window from the host list</string>
+    <string name="cd_new_window">New window</string>
+    <string name="quick_commands_title">Quick commands</string>
+    <string name="field_new_command">New command</string>
+    <string name="toast_clip_not_text">Clipboard isn\'t plain text — ignored</string>
+    <string name="toast_clip_too_large">Clipboard too large (over 1M characters) — paste rejected</string>
+    <string name="close_window">Close window</string>
+    <string name="state_disconnected">Disconnected</string>
+    <string name="action_reconnect_now">Reconnect now</string>
+    <string name="state_ended">Session ended</string>
+
+    <!-- host key dialog -->
+    <string name="hostkey_changed_title">⚠️ Host fingerprint changed</string>
+    <string name="hostkey_confirm_title">Confirm host fingerprint</string>
+    <string name="hostkey_changed_body">The public key for %1$s:%2$d differs from the last recorded one. This may be a server reinstall, or a man-in-the-middle attack. Verify with the server admin before trusting.</string>
+    <string name="hostkey_old">Old: %1$s</string>
+    <string name="hostkey_new">New: %1$s</string>
+    <string name="hostkey_first_body">First connection to %1$s:%2$d. Verify the fingerprint below matches the server\'s actual fingerprint before trusting (run ssh-keygen -lf /etc/ssh/ssh_host_*_key.pub on the server to check).</string>
+    <string name="action_trust_connect">Trust &amp; connect</string>
+
+    <!-- extra keys bar -->
+    <string name="key_paste">Paste</string>
+
+    <!-- notifications -->
+    <string name="chan_sessions">SSH sessions</string>
+    <string name="chan_activity">Task alerts</string>
+    <string name="notif_bell_title">Terminal bell</string>
+    <string name="notif_bell_text">%1$s needs your attention</string>
+    <string name="notif_confirm_title">May be waiting for you</string>
+    <string name="notif_confirm_text">%1$s is stopped at a confirmation prompt — reply from the notification</string>
+    <string name="notif_done_title">Task may be done</string>
+    <string name="notif_done_text">%1$s stopped producing output</string>
+    <string name="notif_action_confirm">✅ Confirm (Enter)</string>
+    <string name="notif_action_interrupt">✋ Interrupt (Esc)</string>
+
+    <!-- foreground service -->
+    <string name="fg_sessions_running">%1$d SSH session(s) running</string>
+
+    <!-- terminal status banners (prefixed with [VibeTerm] in code) -->
+    <string name="st_input_buffer_full">Input buffer full; the connection may be stuck. Input dropped.</string>
+    <string name="st_network_switch">Network changed; reconnecting…</string>
+    <string name="st_auth_failed">Authentication failed: wrong username or password</string>
+    <string name="st_hostkey_save_failed">Failed to save host fingerprint; connection cancelled.</string>
+    <string name="st_hostkey_changed">Host fingerprint changed; connection refused (possible man-in-the-middle).</string>
+    <string name="st_hostkey_unconfirmed">Host fingerprint not confirmed; connection cancelled.</string>
+    <string name="st_disconnected">Disconnected</string>
+    <string name="st_connect_failed">Connection failed: %1$s</string>
+    <string name="st_reconnect_in">Reconnecting in %1$d s…</string>
 </resources>

@@ -11,8 +11,10 @@ import com.termux.terminal.TerminalSessionClient
 import com.termux.view.TerminalView
 import com.trilead.ssh2.Connection
 import com.trilead.ssh2.Session as SshChannel
+import dev.vibeterm.R
 import dev.vibeterm.data.HostProfile
 import dev.vibeterm.data.KnownHosts
+import dev.vibeterm.data.LocaleManager
 import dev.vibeterm.notify.Notifications
 import java.io.InputStream
 import java.io.OutputStream
@@ -159,7 +161,7 @@ class SshTerminalSession(
         val now = SystemClock.elapsedRealtime()
         if (now - lastFullMsgAt < FULL_MSG_MIN_INTERVAL_MS) return
         lastFullMsgAt = now
-        postStatus("\r\n[VibeTerm] 输入缓冲已满,连接可能已卡住,输入被丢弃。")
+        banner(str(R.string.st_input_buffer_full))
     }
 
     override fun onTransportResize(columns: Int, rows: Int, cellWidthPixels: Int, cellHeightPixels: Int) {
@@ -218,7 +220,7 @@ class SshTerminalSession(
         if (userClosed) return
         when (state) {
             State.CONNECTED, State.CONNECTING -> {
-                postStatus("\r\n[VibeTerm] 网络已切换,正在重连…")
+                banner(str(R.string.st_network_switch))
                 connect() // connect() 会切代并关闭旧 transport
             }
             State.DISCONNECTED -> connect()
@@ -254,7 +256,7 @@ class SshTerminalSession(
                 if (gen != generation || userClosed) { conn.close(); return@thread }
                 if (!conn.authenticateWithPassword(profile.username, password)) {
                     conn.close()
-                    onConnectFailed(gen, "认证失败:用户名或密码错误", fatal = true)
+                    onConnectFailed(gen, str(R.string.st_auth_failed), fatal = true)
                     return@thread
                 }
 
@@ -309,7 +311,7 @@ class SshTerminalSession(
                     // 否则会出现“看似已信任、实则未固定公钥”的静默不一致。
                     val effective = if (accepted) {
                         val saved = runCatching { KnownHosts.save(ctx, hostname, port, algorithm, key) }.isSuccess
-                        if (!saved) postStatus("\r\n[VibeTerm] 主机指纹保存失败,连接已取消。")
+                        if (!saved) banner(str(R.string.st_hostkey_save_failed))
                         saved
                     } else false
                     // 只清除“自己这一个”弹窗,避免误清新世代刚弹出的弹窗
@@ -325,9 +327,9 @@ class SshTerminalSession(
                     ?: run { prompt.onDecision(false); false } // 超时:唤醒并按拒绝
                 if (!accepted) {
                     rejected.set(true)
-                    postStatus(
-                        if (changed) "\r\n[VibeTerm] 主机指纹已变更,连接被拒绝(谨防中间人攻击)。"
-                        else "\r\n[VibeTerm] 未确认主机指纹,连接已取消。"
+                    banner(
+                        if (changed) str(R.string.st_hostkey_changed)
+                        else str(R.string.st_hostkey_unconfirmed)
                     )
                 }
                 accepted
@@ -405,14 +407,14 @@ class SshTerminalSession(
         if (!t.disconnected.compareAndSet(false, true)) return // 本代只处理一次
         closeTransport(t)
         synchronized(lock) { if (transport === t) transport = null }
-        postStatus("\r\n[VibeTerm] 连接已断开${if (message != null) ":$message" else ""}")
+        banner(str(R.string.st_disconnected) + if (message != null) ": $message" else "")
         setState(t.gen, State.DISCONNECTED, message)
         scheduleReconnect(t)
     }
 
     private fun onConnectFailed(gen: Int, message: String, fatal: Boolean) {
         if (userClosed || gen != generation) return
-        postStatus("\r\n[VibeTerm] 连接失败:$message")
+        banner(str(R.string.st_connect_failed, message))
         setState(gen, State.DISCONNECTED, message)
         if (!fatal) scheduleReconnect(null)
     }
@@ -426,7 +428,7 @@ class SshTerminalSession(
         if (stable) reconnectDelayMs = BASE_RECONNECT_MS
         val delay = reconnectDelayMs
         reconnectDelayMs = (reconnectDelayMs * 2).coerceAtMost(MAX_RECONNECT_MS)
-        postStatus("\r\n[VibeTerm] ${delay / 1000} 秒后自动重连…")
+        banner(str(R.string.st_reconnect_in, delay / 1000))
         mainHandler.postDelayed({
             if (state == State.DISCONNECTED && SessionManager.appVisible && !userClosed) connect()
         }, delay)
@@ -438,6 +440,13 @@ class SshTerminalSession(
     }
 
     /** 向本地终端(不经远端)追加提示文本。经后台线程写入,绝不阻塞调用方(见 statusExecutor 说明)。 */
+    /** 按用户选择的界面语言取字符串;状态提示在后台线程写入,故每次用本地化 context 解析。 */
+    private fun str(resId: Int, vararg args: Any): String =
+        LocaleManager.wrap(SessionManager.appContext).getString(resId, *args)
+
+    /** 终端内状态提示统一前缀,拼接本地化正文。 */
+    private fun banner(message: String) = postStatus("\r\n[VibeTerm] $message")
+
     private fun postStatus(text: String) {
         val bytes = text.toByteArray(Charsets.UTF_8)
         try {

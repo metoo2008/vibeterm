@@ -12,6 +12,7 @@ import android.graphics.drawable.Icon
 import android.os.Build
 import dev.vibeterm.MainActivity
 import dev.vibeterm.R
+import dev.vibeterm.data.LocaleManager
 import dev.vibeterm.data.Prefs
 import dev.vibeterm.ssh.SessionManager
 import dev.vibeterm.ssh.SshTerminalSession
@@ -22,28 +23,43 @@ object Notifications {
     const val EXTRA_SESSION_HANDLE = "session_handle"
 
     fun ensureChannels(context: Context) {
+        val c = LocaleManager.wrap(context)
         val nm = context.getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_SESSIONS, "SSH 会话保活", NotificationManager.IMPORTANCE_LOW)
+            NotificationChannel(CHANNEL_SESSIONS, c.getString(R.string.chan_sessions), NotificationManager.IMPORTANCE_LOW)
         )
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_ACTIVITY, "任务提醒", NotificationManager.IMPORTANCE_HIGH)
+            NotificationChannel(CHANNEL_ACTIVITY, c.getString(R.string.chan_activity), NotificationManager.IMPORTANCE_HIGH)
         )
     }
 
     /** 终端响铃(Claude Code 等工具的精确完成信号)。 */
     fun onBell(session: SshTerminalSession) {
         if (!Prefs.notifyBell(SessionManager.appContext)) return
-        notifyActivity(session, "终端响铃", "${session.displayName} 需要你的注意")
+        val c = LocaleManager.wrap(SessionManager.appContext)
+        notifyActivity(
+            session,
+            c.getString(R.string.notif_bell_title),
+            c.getString(R.string.notif_bell_text, session.displayName),
+        )
     }
 
     /** 忙碌后静默启发式命中;若屏幕停在确认提示上,标题给出更明确的提醒。 */
     fun onPossiblyFinished(session: SshTerminalSession) {
         if (!Prefs.notifySilence(SessionManager.appContext)) return
+        val c = LocaleManager.wrap(SessionManager.appContext)
         if (looksLikeWaitingForConfirmation(session)) {
-            notifyActivity(session, "可能在等你确认", "${session.displayName} 停在确认提示,可直接在通知上回复")
+            notifyActivity(
+                session,
+                c.getString(R.string.notif_confirm_title),
+                c.getString(R.string.notif_confirm_text, session.displayName),
+            )
         } else {
-            notifyActivity(session, "任务可能已完成", "${session.displayName} 已停止输出")
+            notifyActivity(
+                session,
+                c.getString(R.string.notif_done_title),
+                c.getString(R.string.notif_done_text, session.displayName),
+            )
         }
     }
 
@@ -89,6 +105,7 @@ object Notifications {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val res = LocaleManager.wrap(context)
         val icon = Icon.createWithResource(context, R.drawable.ic_notification)
         // 默认要求先解锁(指纹即可)才发送输入,防止拿到设备的人替 AI 放行;可在设置里关闭。
         val requireAuth = !Prefs.lockscreenApproveWithoutAuth(context)
@@ -106,11 +123,11 @@ object Notifications {
             .setAutoCancel(true)
         if (addActions) {
             builder.addAction(
-                notificationAction(icon, "✅ 确认(回车)",
+                notificationAction(icon, res.getString(R.string.notif_action_confirm),
                     sendInputPending(context, session, "\r", notificationId, requestCodeOffset = 1), requireAuth)
             )
             builder.addAction(
-                notificationAction(icon, "✋ 打断(Esc)",
+                notificationAction(icon, res.getString(R.string.notif_action_interrupt),
                     sendInputPending(context, session, "\u001b", notificationId, requestCodeOffset = 2), requireAuth)
             )
         }

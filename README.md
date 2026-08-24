@@ -47,6 +47,8 @@ VibeTerm doesn't fix "Chinese input" — it fixes **Android terminal IME/InputCo
 
 > Tested: the "multi-language input" screenshot above shows Chinese, Japanese, Korean, Hindi, and Arabic entered via the IME `commitText` path and echoed back by SSH (the same Android API that Gboard/Baidu use to commit text); Chinese candidate composition was additionally verified end-to-end on a real device (Baidu IME). Reports for other IMEs are welcome.
 
+**App UI language:** the interface itself ships in **English, 简体中文, 日本語, and 한국어** — switch it in **Settings → Language** (or via the Android 13+ per-app language setting). It defaults to following the system locale.
+
 See [docs/FAQ.md](docs/FAQ.md) for why Android SSH terminals can't type CJK/Unicode, in several languages.
 
 ## Screenshots

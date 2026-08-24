@@ -1,11 +1,13 @@
 package dev.vibeterm
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import dev.vibeterm.data.LocaleManager
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -23,6 +25,11 @@ import dev.vibeterm.ui.theme.VibeTermTheme
 import dev.vibeterm.ui.theme.applyTerminalPalette
 
 class MainActivity : ComponentActivity() {
+
+    // 应用用户选择的界面语言:在 Activity 创建前重写 base context 的 locale
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleManager.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge() // targetSdk 35+ 强制 edge-to-edge;显式启用以正确处理系统栏

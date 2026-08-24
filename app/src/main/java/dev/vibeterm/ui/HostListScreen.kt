@@ -31,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -47,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,8 +56,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import dev.vibeterm.R
 import dev.vibeterm.data.HostProfile
 import dev.vibeterm.data.HostStore
+import dev.vibeterm.data.LocaleManager
 import dev.vibeterm.data.Prefs
 import com.termux.terminal.TerminalEmulator
 import dev.vibeterm.data.SecureStore
@@ -102,11 +109,11 @@ fun HostListScreen(onOpenSession: () -> Unit) {
                 actions = {
                     if (SessionManager.sessions.isNotEmpty()) {
                         TextButton(onClick = onOpenSession) {
-                            Text("会话 (${SessionManager.sessions.size})")
+                            Text(stringResource(R.string.sessions_count, SessionManager.sessions.size))
                         }
                     }
                     IconButton(onClick = { showSettings = true }) {
-                        Icon(Icons.Filled.Settings, contentDescription = "设置", tint = TermGray)
+                        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.cd_settings), tint = TermGray)
                     }
                 },
             )
@@ -117,7 +124,7 @@ fun HostListScreen(onOpenSession: () -> Unit) {
                 containerColor = TermGreen,
                 contentColor = MaterialTheme.colorScheme.background,
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "添加主机")
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.cd_add_host))
             }
         },
     ) { padding ->
@@ -135,10 +142,10 @@ fun HostListScreen(onOpenSession: () -> Unit) {
                     color = TermGreen,
                 )
                 Spacer(Modifier.height(16.dp))
-                Text("还没有主机", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.hosts_empty_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "点右下角 + 添加你的开发服务器",
+                    stringResource(R.string.hosts_empty_hint),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                 )
@@ -256,11 +263,11 @@ private fun HostCard(
             )
         }
         IconButton(onClick = onEdit, modifier = Modifier.size(34.dp)) {
-            Icon(Icons.Filled.Edit, contentDescription = "编辑", tint = TermGray, modifier = Modifier.size(17.dp))
+            Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.cd_edit), tint = TermGray, modifier = Modifier.size(17.dp))
         }
         Spacer(Modifier.width(4.dp))
         IconButton(onClick = onDelete, modifier = Modifier.size(34.dp)) {
-            Icon(Icons.Filled.Delete, contentDescription = "删除", tint = TermGray, modifier = Modifier.size(17.dp))
+            Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.cd_delete), tint = TermGray, modifier = Modifier.size(17.dp))
         }
     }
 }
@@ -272,45 +279,120 @@ private fun SettingsDialog(onDismiss: () -> Unit) {
     var silence by remember { mutableStateOf(Prefs.notifySilence(context)) }
     var noAuth by remember { mutableStateOf(Prefs.lockscreenApproveWithoutAuth(context)) }
     var osc52 by remember { mutableStateOf(Prefs.osc52Clipboard(context)) }
+    var showLang by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("设置") },
+        title = { Text(stringResource(R.string.settings_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 SettingSwitch(
-                    title = "终端响铃通知",
-                    description = "Claude Code 等工具响铃时提醒(会话不在屏幕上才提醒)",
+                    title = stringResource(R.string.set_bell_title),
+                    description = stringResource(R.string.set_bell_desc),
                     checked = bell,
                 ) { bell = it; Prefs.setNotifyBell(context, it) }
                 SettingSwitch(
-                    title = "静默完成通知",
-                    description = "持续输出的任务停止输出后提醒「可能已完成」",
+                    title = stringResource(R.string.set_silence_title),
+                    description = stringResource(R.string.set_silence_desc),
                     checked = silence,
                 ) { silence = it; Prefs.setNotifySilence(context, it) }
                 SettingSwitch(
-                    title = "锁屏免解锁批准",
-                    description = "关:锁屏点通知的确认/打断需先解锁(指纹即可),更安全",
+                    title = stringResource(R.string.set_noauth_title),
+                    description = stringResource(R.string.set_noauth_desc),
                     checked = noAuth,
                 ) { noAuth = it; Prefs.setLockscreenApproveWithoutAuth(context, it) }
                 SettingSwitch(
-                    title = "允许远端写剪贴板 (OSC 52)",
-                    description = "关:失陷服务器无法劫持你的剪贴板。除非明确需要,建议保持关闭",
+                    title = stringResource(R.string.set_osc52_title),
+                    description = stringResource(R.string.set_osc52_desc),
                     checked = osc52,
                 ) {
                     osc52 = it
                     Prefs.setOsc52Clipboard(context, it)
                     TerminalEmulator.allowOsc52Clipboard = it
                 }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { showLang = true }
+                        .padding(vertical = 2.dp),
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.set_language_title), style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            LocaleManager.displayName(context, Prefs.appLang(context)),
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
                 Text(
-                    "字号:在终端上双指缩放调整,自动记忆\n切输入法:Ctrl+空格 或长按键条 ⌨",
+                    stringResource(R.string.set_tips),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("完成") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_done)) } },
     )
+
+    if (showLang) {
+        LanguageDialog(
+            current = Prefs.appLang(context),
+            onDismiss = { showLang = false },
+            onPick = { tag ->
+                showLang = false
+                if (tag != Prefs.appLang(context)) {
+                    Prefs.setAppLang(context, tag)
+                    onDismiss()
+                    // 语言切换后整活动重建,让所有 stringResource 走新 locale
+                    context.findActivity()?.recreate()
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun LanguageDialog(
+    current: String,
+    onDismiss: () -> Unit,
+    onPick: (String) -> Unit,
+) {
+    val context = LocalContext.current
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.set_language_title)) },
+        text = {
+            Column {
+                LocaleManager.TAGS.forEach { tag ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { onPick(tag) }
+                            .padding(vertical = 6.dp),
+                    ) {
+                        RadioButton(selected = tag == current, onClick = { onPick(tag) })
+                        Spacer(Modifier.width(8.dp))
+                        Text(LocaleManager.displayName(context, tag))
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
+    )
+}
+
+private fun Context.findActivity(): Activity? {
+    var c: Context = this
+    while (c is ContextWrapper) {
+        if (c is Activity) return c
+        c = c.baseContext
+    }
+    return null
 }
 
 @Composable
@@ -345,19 +427,19 @@ private fun HostEditDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (initial == null) "添加主机" else "编辑主机") },
+        title = { Text(stringResource(if (initial == null) R.string.add_host_title else R.string.edit_host_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(label, { label = it }, label = { Text("名称(可选)") }, singleLine = true)
-                OutlinedTextField(host, { host = it }, label = { Text("主机地址") }, singleLine = true)
+                OutlinedTextField(label, { label = it }, label = { Text(stringResource(R.string.field_label)) }, singleLine = true)
+                OutlinedTextField(host, { host = it }, label = { Text(stringResource(R.string.field_host)) }, singleLine = true)
                 OutlinedTextField(
-                    port, { port = it }, label = { Text("端口") }, singleLine = true,
+                    port, { port = it }, label = { Text(stringResource(R.string.field_port)) }, singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
-                OutlinedTextField(username, { username = it }, label = { Text("用户名") }, singleLine = true)
+                OutlinedTextField(username, { username = it }, label = { Text(stringResource(R.string.field_username)) }, singleLine = true)
                 OutlinedTextField(
                     password, { password = it },
-                    label = { Text(if (initial == null) "密码" else "密码(留空则不修改)") },
+                    label = { Text(stringResource(if (initial == null) R.string.field_password else R.string.field_password_keep)) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -365,7 +447,7 @@ private fun HostEditDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Switch(checked = useTmux, onCheckedChange = { useTmux = it })
                     Spacer(Modifier.width(8.dp))
-                    Text("tmux 断线保活(推荐)")
+                    Text(stringResource(R.string.field_tmux))
                 }
             }
         },
@@ -382,9 +464,9 @@ private fun HostEditDialog(
                     )
                     onSave(profile, password)
                 },
-            ) { Text("保存") }
+            ) { Text(stringResource(R.string.action_save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 
@@ -399,25 +481,25 @@ private fun PasswordDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("连接到 ${host.displayName}") },
+        title = { Text(stringResource(R.string.connect_to_title, host.displayName)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
-                    password, { password = it }, label = { Text("密码") }, singleLine = true,
+                    password, { password = it }, label = { Text(stringResource(R.string.field_password)) }, singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = save, onCheckedChange = { save = it })
-                    Text("记住密码(Keystore 加密)")
+                    Text(stringResource(R.string.remember_password))
                 }
             }
         },
         confirmButton = {
             TextButton(enabled = password.isNotEmpty(), onClick = { onConnect(password, save) }) {
-                Text("连接")
+                Text(stringResource(R.string.action_connect))
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }

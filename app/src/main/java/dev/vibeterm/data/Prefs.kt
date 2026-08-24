@@ -40,4 +40,11 @@ object Prefs {
     fun setLockscreenApproveWithoutAuth(context: Context, value: Boolean) {
         prefs(context).edit().putBoolean("lockscreen_noauth", value).apply()
     }
+
+    /** 界面语言。"system" 跟随系统;否则为 BCP-47 标签(en / zh-CN / ja / ko),见 [LocaleManager]。 */
+    fun appLang(context: Context): String =
+        prefs(context).getString("app_lang", LocaleManager.SYSTEM) ?: LocaleManager.SYSTEM
+    fun setAppLang(context: Context, tag: String) {
+        prefs(context).edit().putString("app_lang", tag).apply()
+    }
 }

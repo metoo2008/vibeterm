@@ -2,7 +2,7 @@ VibeTerm is an Android SSH terminal built for "vibe coding" — running command-
 
 What makes it different:
 
-* Native CJK input — most terminal apps cannot type Chinese/Japanese/Korean because of how they declare their input connection. VibeTerm rewrites the IME input path so mainstream CJK keyboards work out of the box.
+* Full Android IME / Unicode input — most terminal apps act like a "keyboard device": they take raw key events but ignore text the IME commits via commitText, so Chinese, Japanese, Korean, Indic, Arabic, Cyrillic and more cannot be typed. VibeTerm properly implements Android's IME/InputConnection contract (composing-text preedit + Unicode commit to UTF-8) while keeping hardware control keys (Ctrl/Alt/Esc/Tab). Note: this fixes text INPUT for all such languages; on-screen DISPLAY of right-to-left (Arabic/Hebrew) and complex Indic scripts keeps the usual terminal-emulator limitations.
 * tmux-backed keep-alive — close the app, switch networks, or reboot your phone; on reconnect you seamlessly return to the same session, and long-running tasks keep going.
 * Multi-window and tablet split-screen — watch several sessions at once; side-by-side panes on wide screens.
 * Lock-screen approval for AI tools — when a confirmation prompt is detected, the notification carries Confirm / Interrupt actions (device authentication required by default).

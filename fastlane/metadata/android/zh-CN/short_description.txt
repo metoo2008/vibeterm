@@ -1,1 +1,1 @@
-为 vibe coding 而生的 SSH 终端:中文输入、tmux 断线保活、多窗口
+为 vibe coding 而生的 SSH 终端:完整 IME 多语言输入、tmux 断线保活

@@ -4,7 +4,7 @@
 
 **为 vibe coding 而生的 Android SSH 终端 —— 在手机/平板上舒服地跑 Claude Code、Codex**
 
-*An Android SSH terminal built for vibe coding — run Claude Code / Codex comfortably from your phone or tablet. Native CJK input, tmux-backed session persistence, lock-screen approval for AI agents.*
+*An Android SSH terminal built for vibe coding — run Claude Code / Codex comfortably from your phone or tablet. Full Android IME / Unicode input (CJK & international keyboards), tmux-backed session persistence, lock-screen approval for AI agents.*
 
 GPL-3.0 · minSdk 26 (Android 8.0+) · Kotlin + Jetpack Compose
 
@@ -16,7 +16,7 @@ GPL-3.0 · minSdk 26 (Android 8.0+) · Kotlin + Jetpack Compose
 
 市面上的 Android SSH 客户端有三个治不好的病:
 
-1. **打不了中文**。终端类 App 向输入法声明 `TYPE_NULL`,中文输入法直接失效——切到中文输入法界面毫无反应。VibeTerm 重写了 IME 输入链路(真正的 `TYPE_CLASS_TEXT` + 本地预编辑),**百度/搜狗/讯飞/Gboard 开箱即用**(真机实测)。
+1. **打不了中文——其实是打不了绝大多数非英文**。终端类 App 常把自己当成"键盘设备":要么向输入法声明 `TYPE_NULL` 只收原始按键、要么只认 KeyEvent 不接受输入法用 `commitText` 提交的 Unicode 文本。结果是**中文、日文、韩文、印地语、阿拉伯语、俄语……凡是依赖输入法组合/提交文本的语言全部受影响**,不止中文。VibeTerm **完整实现了 Android 的 IME/InputConnection 协议**(真正的 `TYPE_CLASS_TEXT` + `setComposingText` 本地预编辑 + `commitText` 按 Unicode 码点转 UTF-8),同时保留硬件控制键(Ctrl/Alt/Esc/Tab)——这是一个比"支持中文"大得多的通用修复。详见 [输入语言支持](#输入语言支持--imeunicode-input)。百度/搜狗/讯飞/Gboard 已真机实测。
 2. **切窗口费劲**。vibe coding 要同时开好几个窗口盯着 AI 干活。VibeTerm:标签页多会话、平板/横屏双栏分屏、连接活在前台服务里转屏切后台不断。
 3. **断线杀进程**。关 App、换网络,跑了半小时的任务就没了。VibeTerm 每个窗口自动 `tmux -u new-session -A -D`,**杀 App、WiFi↔流量切换、重启手机,重连都无缝回到原会话**——服务端兜底,怎么断都不怕。
 
@@ -29,6 +29,23 @@ GPL-3.0 · minSdk 26 (Android 8.0+) · Kotlin + Jetpack Compose
 - 🚀 **冷启动自动恢复**:App 一开,上次所有窗口自动重连回各自 tmux 会话
 - 🌐 **网络秒重连**:监听系统网络切换,变网立即重建连接,不等超时
 - 🎨 JetBrains Mono 字体 + GitHub-Dark 终端配色;Ctrl+空格 切输入法(实体键盘惯例)
+
+## 输入语言支持 / IME & Unicode input
+
+VibeTerm 解决的不是"中文输入",而是 **Android 终端的 IME/InputConnection 输入本身**。只要你的输入法通过标准的 `setComposingText`/`commitText` 提交文本,VibeTerm 就能把它按 Unicode 码点(含 BMP 之外的 surrogate pair)转成 UTF-8 送进 SSH。因此下列语言都受益(不止中文):
+
+*VibeTerm fixes Android terminal **IME/InputConnection input** in general, not just Chinese. Any keyboard that commits text via the standard `setComposingText`/`commitText` path works — its Unicode is sent to SSH as UTF-8.*
+
+| 档位 / Tier | 语言 / Languages | 说明 |
+|---|---|---|
+| 依赖组合+选词,受影响最重 | **中文**(拼音/注音/粤拼)、**日文**(假名→汉字) | 最能体现差异;中文已真机实测,日文机制相同 |
+| 依赖组合 | **韩文**(Hangul 组字)、**印地/孟加拉/泰米尔等**印度系文字、transliteration 输入法 | 组合串本地预编辑,选定后上屏 |
+| 需要提交非 ASCII Unicode | **俄语/乌克兰语/希腊语**、**阿拉伯语/波斯语/希伯来语**、**泰语/越南语**、带重音的**法/德/西**等 | 不"选词"但需 IME 把 Unicode 交给应用 |
+| 基线 | 英语及 ASCII | 一直可用 |
+
+**输入 vs. 显示(如实说明)**:VibeTerm 负责把文本**正确输入**到 SSH 通道。**显示**遵循通用终端的限制——CJK 宽字符、组合附加符号已正确处理;但**从右到左(阿拉伯语/希伯来语)与阿拉伯连写、复杂印度文字连字**在几乎所有终端模拟器里都按单元格从左到右简化渲染,VibeTerm 亦然。也就是说:这些文字**能正确输入、字节能到达服务器**,但终端里的显示可能是简化/LTR 形式。
+
+> 已在真机验证:中文(百度输入法)全链路。其余语言由同一套语言无关的 IME 实现覆盖,欢迎反馈各输入法的实测情况。
 
 ## 截图
 

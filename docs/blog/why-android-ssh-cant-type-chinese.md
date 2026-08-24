@@ -2,6 +2,8 @@
 
 *A deep dive into `TYPE_NULL`, `InputConnection`, and `commitText()` — and why switching keyboards never helps.*
 
+> 📝 Published on dev.to: <https://dev.to/metooyang2008/why-you-cant-type-chinese-or-japanese-in-android-ssh-terminals-and-how-to-fix-it-p2a> — please treat that as the canonical version.
+
 If you've ever opened an SSH client on Android, switched to a Chinese, Japanese, or Korean keyboard, and watched your carefully-composed text simply **not appear** in the shell — you're not imagining it, and it's not your keyboard's fault. It's a bug in how most terminal apps handle text input, and once you understand it, the fix is obvious.
 
 This post explains the root cause, why it affects far more languages than just Chinese, why changing your IME doesn't help, and how to implement it correctly.

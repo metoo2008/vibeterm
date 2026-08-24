@@ -49,7 +49,7 @@ VibeTerm 解决的不是"中文输入",而是 **Android 终端的 IME/InputConne
 
 **界面语言**:App 界面本身提供 **English、简体中文、日本語、한국어**,在 **设置 → 语言** 切换(也支持 Android 13+ 的按应用语言设置)。默认跟随系统语言。
 
-常见问题(为什么安卓 SSH 终端打不了中文/日文/韩文等)见 [docs/FAQ.md](docs/FAQ.md)。
+常见问题(为什么安卓 SSH 终端打不了中文/日文/韩文等)见 [docs/FAQ.md](docs/FAQ.md)。完整技术剖析见博客:[Why you can't type Chinese or Japanese in Android SSH terminals — and how to fix it](https://dev.to/metooyang2008/why-you-cant-type-chinese-or-japanese-in-android-ssh-terminals-and-how-to-fix-it-p2a)。
 
 ## 截图
 

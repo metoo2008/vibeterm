@@ -49,7 +49,7 @@ VibeTerm doesn't fix "Chinese input" — it fixes **Android terminal IME/InputCo
 
 **App UI language:** the interface itself ships in **English, 简体中文, 日本語, and 한국어** — switch it in **Settings → Language** (or via the Android 13+ per-app language setting). It defaults to following the system locale.
 
-See [docs/FAQ.md](docs/FAQ.md) for why Android SSH terminals can't type CJK/Unicode, in several languages.
+See [docs/FAQ.md](docs/FAQ.md) for why Android SSH terminals can't type CJK/Unicode, in several languages. For the full technical deep-dive, read the blog post: [Why you can't type Chinese or Japanese in Android SSH terminals — and how to fix it](https://dev.to/metooyang2008/why-you-cant-type-chinese-or-japanese-in-android-ssh-terminals-and-how-to-fix-it-p2a).
 
 ## Screenshots
 

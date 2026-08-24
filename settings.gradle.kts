@@ -1,11 +1,15 @@
-// 阿里云镜像置前是为了中国大陆网络可直接构建;内容与官方仓库一致,海外网络亦可用,介意可调整顺序。
-// Aliyun mirrors are listed first so builds work smoothly from mainland China; they serve the same
-// artifacts as the official repos and work fine elsewhere too. Reorder if you prefer.
+// 默认使用官方仓库(google / mavenCentral / gradlePluginPortal),保证 F-Droid、CI 及海外贡献者的
+// 构建环境干净、可复现。
+//
+// 中国大陆开发者可启用阿里云镜像加速:设置环境变量 VIBETERM_CN_MIRROR=true 再构建。
+// 镜像内容与官方一致,仅调整解析顺序。
 pluginManagement {
     repositories {
-        maven("https://maven.aliyun.com/repository/gradle-plugin")
-        maven("https://maven.aliyun.com/repository/google")
-        maven("https://maven.aliyun.com/repository/central")
+        if (System.getenv("VIBETERM_CN_MIRROR") == "true") {
+            maven("https://maven.aliyun.com/repository/gradle-plugin")
+            maven("https://maven.aliyun.com/repository/google")
+            maven("https://maven.aliyun.com/repository/central")
+        }
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -14,8 +18,10 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven("https://maven.aliyun.com/repository/google")
-        maven("https://maven.aliyun.com/repository/central")
+        if (System.getenv("VIBETERM_CN_MIRROR") == "true") {
+            maven("https://maven.aliyun.com/repository/google")
+            maven("https://maven.aliyun.com/repository/central")
+        }
         google()
         mavenCentral()
     }

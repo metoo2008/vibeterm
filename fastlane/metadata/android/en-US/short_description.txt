@@ -1,0 +1,1 @@
+SSH terminal for vibe coding: CJK input, tmux keep-alive, multi-window

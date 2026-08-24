@@ -1,0 +1,2 @@
+- F-Droid release: build cleaned up to use official Maven repositories by default.
+- Includes all v0.3.x work: Android 16 (targetSdk 36) + edge-to-edge, hardened clipboard paste, and fixes from six rounds of security audit.

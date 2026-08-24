@@ -6,8 +6,12 @@ Android SSH 客户端,核心卖点:原生中文输入(自研 IME InputConnection
 
 ## 构建
 - JDK 17 + Android SDK(compileSdk 36):`./gradlew :app:assembleDebug`(AGP 8.11.1 / Gradle 8.13)
-- Maven 仓库阿里云镜像优先、Gradle wrapper 腾讯镜像(照顾中国大陆网络,海外亦可用),见 settings.gradle.kts
+- Maven 仓库**默认官方**(F-Droid/CI 干净);国内加速设环境变量 `VIBETERM_CN_MIRROR=true`。Gradle wrapper 用腾讯镜像(有 SHA-256 校验)
 - 机器相关的路径与环境写在 `CLAUDE.local.md`(不入库)
+
+## 分发(重要)
+- GPL-3.0(内嵌 Termux 引擎)。**不上 Google Play**(GPLv3×Play 条款冲突 + Termux 版权非本人),只走 **F-Droid + GitHub Releases**;流程见 `docs/FDROID.md`。
+- 新增依赖前必须确认是自由软件许可(不能引入 Google 专有库),否则 F-Droid 拒收。
 
 ## 模块
 - `terminal-emulator/`、`terminal-view/`:**vendor 自 termux-app(GPLv3,基线 master@2026-08-22)**。

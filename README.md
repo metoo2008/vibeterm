@@ -46,6 +46,15 @@ GPL-3.0 · minSdk 26 (Android 8.0+) · Kotlin + Jetpack Compose
 - 安装 `tmux`(没有也能用,但失去断线保活)
 - 建议:Claude Code 设置 `preferredNotifChannel: terminal_bell`,任务完成即收到手机通知
 
+## 安装
+
+- **F-Droid**:自由软件应用商店,自动更新(推荐)。收录后可搜索 “VibeTerm”。
+- **GitHub Releases**:直接下载签名 APK([Releases](https://github.com/metoo2008/vibeterm/releases))。
+
+> 说明:本项目内嵌 Termux 的 GPLv3 终端引擎,整体为 **GPL-3.0**。GPLv3 与 Google Play 的分发条款存在已知冲突,
+> 且该引擎版权属于 Termux 作者,故**不上架 Google Play**,只走 GPL 友好渠道(F-Droid / GitHub)。
+> F-Droid 与 GitHub 的 APK 由不同密钥签名,二者不能相互覆盖升级,请择一渠道安装。
+
 ## 构建
 
 ```bash
@@ -54,8 +63,8 @@ GPL-3.0 · minSdk 26 (Android 8.0+) · Kotlin + Jetpack Compose
 # APK 产物:app/build/outputs/apk/debug/app-debug.apk
 ```
 
-> `settings.gradle.kts` 中 Maven 仓库将阿里云镜像置于官方仓库之前、Gradle wrapper 使用腾讯镜像,
-> 以便中国大陆网络直接构建;镜像内容与官方一致,海外网络亦可正常使用,介意可自行调整顺序。
+> 默认使用官方 Maven 仓库(F-Droid / CI / 海外均可干净构建)。中国大陆开发者可设环境变量
+> `VIBETERM_CN_MIRROR=true` 启用阿里云镜像加速;Gradle wrapper 使用腾讯镜像(内容与官方一致,有 SHA-256 校验)。
 
 ## 架构
 

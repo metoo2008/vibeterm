@@ -1,0 +1,14 @@
+VibeTerm is an Android SSH terminal built for "vibe coding" — running command-line AI coding agents like Claude Code and Codex comfortably from your phone or tablet.
+
+What makes it different:
+
+* Native CJK input — most terminal apps cannot type Chinese/Japanese/Korean because of how they declare their input connection. VibeTerm rewrites the IME input path so mainstream CJK keyboards work out of the box.
+* tmux-backed keep-alive — close the app, switch networks, or reboot your phone; on reconnect you seamlessly return to the same session, and long-running tasks keep going.
+* Multi-window and tablet split-screen — watch several sessions at once; side-by-side panes on wide screens.
+* Lock-screen approval for AI tools — when a confirmation prompt is detected, the notification carries Confirm / Interrupt actions (device authentication required by default).
+* Quick-command palette, an extra-keys bar (Esc, Shift+Tab, Ctrl, arrows), task-done notifications, cold-start session restore, and instant reconnect on network change.
+* JetBrains Mono font with a dark terminal palette; adapted for Android 16 edge-to-edge.
+
+Privacy: no data collection, no ads, no telemetry. Passwords are stored only on-device, encrypted with the Android Keystore. VibeTerm connects only to the servers you configure. Free and open source (GPL-3.0).
+
+The server should have tmux installed (optional, for keep-alive) and a UTF-8 locale.

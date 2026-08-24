@@ -1,4 +1,12 @@
-# Google Play 上架指南 / 提交清单
+# Google Play 上架指南(⚠️ 当前不采用)
+
+> **本项目决定不上架 Google Play。** 原因:内嵌的 Termux 终端引擎为 GPLv3 且版权属于 Termux 作者,
+> 而 GPLv3 与 Google Play 的分发条款存在已知冲突。改走 GPL 友好渠道:**F-Droid + GitHub Releases**,
+> 参见 [F-Droid 分发说明](FDROID.md)。
+>
+> 本文仅作存档保留(AAB 构建方式、数据安全表、权限说明等内容对其他分发场景仍有参考价值)。
+
+---
 
 本文件给出 VibeTerm 上架 Google Play 所需的全部素材与逐项声明。构建产物 **AAB** 由本项目生成,其余为你在 Play Console 网页端填写的内容。
 

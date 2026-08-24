@@ -1,0 +1,27 @@
+# F-Droid 构建元数据。提交到 https://gitlab.com/fdroid/fdroiddata 的 metadata/ 目录发起合并请求;
+# F-Droid 在其构建服务器上从源码构建并用 F-Droid 的密钥签名(无需你的 keystore)。
+# 商店文案与截图由仓库内的 fastlane/metadata/ 提供,F-Droid 会自动抓取。
+Categories:
+  - Development
+  - Internet
+License: GPL-3.0-only
+AuthorName: metoo
+SourceCode: https://github.com/metoo2008/vibeterm
+IssueTracker: https://github.com/metoo2008/vibeterm/issues
+Changelog: https://github.com/metoo2008/vibeterm/releases
+
+RepoType: git
+Repo: https://github.com/metoo2008/vibeterm.git
+
+Builds:
+  - versionName: 0.3.2
+    versionCode: 10
+    commit: v0.3.2
+    subdir: app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 0.3.2
+CurrentVersionCode: 10

@@ -65,8 +65,8 @@ VibeTerm 解决的不是"中文输入",而是 **Android 终端的 IME/InputConne
 
 ## 安装
 
-- **F-Droid**:自由软件应用商店,自动更新(推荐)。收录后可搜索 “VibeTerm”。
-- **GitHub Releases**:直接下载签名 APK([Releases](https://github.com/metoo2008/vibeterm/releases))。
+- **GitHub Releases**:下载签名 APK 安装([Releases](https://github.com/metoo2008/vibeterm/releases))。当前发布渠道。
+- **F-Droid**:计划中(构建配方与商店素材已就绪,见 [docs/FDROID.md](docs/FDROID.md));上架后可在 F-Droid 客户端搜索 “VibeTerm”。
 
 > 说明:本项目内嵌 Termux 的 GPLv3 终端引擎,整体为 **GPL-3.0**。GPLv3 与 Google Play 的分发条款存在已知冲突,
 > 且该引擎版权属于 Termux 作者,故**不上架 Google Play**,只走 GPL 友好渠道(F-Droid / GitHub)。

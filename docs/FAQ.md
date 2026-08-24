@@ -56,3 +56,37 @@ Yes — **VibeTerm** is an open-source (GPL-3.0) Android SSH terminal built for 
 ### 有原生支持中文输入的安卓 SSH 终端吗?
 
 有——**VibeTerm**,开源(GPL-3.0)的安卓 SSH 终端,专门解决这个问题:完整 IME/Unicode 输入、tmux 断线保活、多窗口/分屏、锁屏批准 AI 编码代理。<https://github.com/metoo2008/vibeterm>
+
+---
+
+## 日本語
+
+### Android の SSH ターミナルで日本語が入力できないのはなぜ?
+
+多くの Android ターミナルアプリは自分を「キーボードデバイス」として扱い、`onCreateInputConnection()` で `TYPE_NULL` を宣言したり、`KeyEvent` しか受け取らず IME が `commitText()` で送る文字を無視します。そのため、かな漢字変換で確定した文字が SSH に届きません。キーボード(IME)を変えても直りません — 原因はアプリ側にあるからです。
+
+**VibeTerm** は Android の IME / InputConnection を正しく実装した SSH ターミナルです(合成テキストのプレエディット + `commitText` → UTF-8、Ctrl/Alt/Esc も維持)。<https://github.com/metoo2008/vibeterm>
+
+## 한국어
+
+### 안드로이드 SSH 터미널에서 한글을 입력할 수 없는 이유는?
+
+많은 터미널 앱이 자신을 '키보드 장치'처럼 처리하여 `TYPE_NULL`을 선언하거나 `KeyEvent`만 받고, IME가 `commitText()`로 전달하는 텍스트를 무시합니다. 그래서 조합된 한글이 SSH 세션에 전달되지 않습니다. 키보드(구글/삼성 등)를 바꿔도 해결되지 않습니다 — 문제는 앱에 있기 때문입니다.
+
+**VibeTerm**은 안드로이드 IME / InputConnection을 올바르게 구현한 오픈소스 SSH 터미널입니다. <https://github.com/metoo2008/vibeterm>
+
+## हिन्दी
+
+### Android SSH टर्मिनल में हिन्दी (या अन्य भाषाएँ) क्यों टाइप नहीं होतीं?
+
+कई टर्मिनल ऐप खुद को "कीबोर्ड डिवाइस" की तरह मानते हैं: वे `TYPE_NULL` घोषित करते हैं या केवल `KeyEvent` लेते हैं और IME द्वारा `commitText()` से भेजा गया टेक्स्ट अनदेखा कर देते हैं। इसलिए टाइप किया गया टेक्स्ट SSH तक नहीं पहुँचता। कीबोर्ड बदलने से हल नहीं होता — समस्या ऐप में है।
+
+**VibeTerm** Android के IME / InputConnection को सही ढंग से लागू करता है (ओपन-सोर्स)। <https://github.com/metoo2008/vibeterm>
+
+## العربية
+
+### لماذا لا يمكنني كتابة العربية (أو لغات أخرى) في طرفية SSH على أندرويد؟
+
+تتعامل كثير من تطبيقات الطرفية مع نفسها كـ«جهاز لوحة مفاتيح»: فتُعلن `TYPE_NULL` أو تقبل أحداث `KeyEvent` فقط وتتجاهل النص الذي يرسله محرّر الإدخال (IME) عبر `commitText()`، لذا لا يصل النص إلى جلسة SSH. تغيير لوحة المفاتيح لا يحل المشكلة لأنها في التطبيق نفسه.
+
+ينفّذ **VibeTerm** بروتوكول IME / InputConnection في أندرويد بشكل صحيح (مفتوح المصدر). ملاحظة: الإدخال يعمل لكل هذه اللغات؛ أما عرض الكتابة من اليمين إلى اليسار فمحدود كما في معظم الطرفيات. <https://github.com/metoo2008/vibeterm>
